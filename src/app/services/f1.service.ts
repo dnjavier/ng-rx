@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import { SeasonDrivers } from '../utils/season-drivers.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { SeasonRacesResults } from '../utils/season-races-results.interface';
 import { SeasonQualifyingResults } from '../utils/season-qualifying.interface';
+import { DriverTable } from '../utils/driver-table.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -22,8 +23,12 @@ export class F1Service {
    * @param year - Season's period
    * @returns An observable with a list of Drivers
    */
-  public getDriversPerSeason(year: string): Observable<SeasonDrivers> {
-    return this.http.get<SeasonDrivers>(`${this.baseUrl}/${year}/drivers.json`);
+  public getDriversPerSeason(year: string): Observable<DriverTable> {
+    return this.http.get<SeasonDrivers>(`${this.baseUrl}/${year}/drivers.json`).pipe(
+      map(data => {
+        return data.MRData.DriverTable;
+      })
+    );
   }
 
   /**
