@@ -1,6 +1,7 @@
 <h1>This is an app to practice RxJS</h1>
 
-<table *ngIf="drivers$ | async as driversTable">
+<button (click)="getDrivers(); toggleTab('drivers');">List of Drivers per season</button>
+<table *ngIf="activeTab === 'drivers' && driversSeason">
   <thead>
     <tr>
       <th>Name</th>
@@ -8,9 +9,9 @@
     </tr>
   </thead>
   <tbody>
-    <tr *ngFor="let driver of driversTable.Drivers">
-      <td>{{ driver.givenName }}</td>
-      <td>{{ driversTable.season }}</td>
+    <tr *ngFor="let driver of driversSeason">
+      <td>{{ driver.name }}</td>
+      <td>{{ driver.season }}</td>
     </tr>
   </tbody>
 </table>
