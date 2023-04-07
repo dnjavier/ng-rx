@@ -47,4 +47,16 @@ export class F1Service {
   public getRaceResultsInSeason(year: string, round: string): Observable<SeasonRacesResults> {
     return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/results.json`);
   }
+
+  /**
+   * Makes a request to the API in order to get the Qualifying results
+   * of a race in a season.
+   * 
+   * @param year - Season's period
+   * @param round - Race sequence number
+   * @returns An observable with a list of Qualifying results
+   */
+  public getQualifyingResultsInRaceAndSeason(year: string, round: string): Observable<SeasonRacesResults> {
+    return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`);
+  }
 }
