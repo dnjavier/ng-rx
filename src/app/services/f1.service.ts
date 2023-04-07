@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { SeasonDrivers } from '../utils/season-drivers.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { SeasonRacesResults } from '../utils/season-races-results.interface';
+import { SeasonQualifyingResults } from '../utils/season-qualifying.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -56,7 +57,7 @@ export class F1Service {
    * @param round - Race sequence number
    * @returns An observable with a list of Qualifying results
    */
-  public getQualifyingResultsInRaceAndSeason(year: string, round: string): Observable<SeasonRacesResults> {
-    return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`);
+  public getQualifyingResultsInRaceAndSeason(year: string, round: string): Observable<SeasonQualifyingResults> {
+    return this.http.get<SeasonQualifyingResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`);
   }
 }

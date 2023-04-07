@@ -1,6 +1,6 @@
 import { RaceTable } from './race-table.interface';
 
-export interface SeasonRacesResults {
+export interface SeasonQualifyingResults {
   MRData: {
     RaceTable: RaceTable;
     limit: string;

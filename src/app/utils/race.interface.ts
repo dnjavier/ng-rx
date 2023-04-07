@@ -4,6 +4,7 @@ import { Driver } from './driver.interface';
 export interface Race {
   Circuit: Circuit;
   Results?: Result[];
+  QualifyingResults?: QualifyingResults[];
   date: string;
   raceName: string;
   round: string;
@@ -13,7 +14,7 @@ export interface Race {
 }
 
 interface Result {
-  Constructor: {};
+  Constructor: Constructor;
   Driver: Driver;
   FastestLap: {
     AverageSpeed: {
@@ -37,4 +38,21 @@ interface Result {
   position: string;
   positionText: string;
   status: string;
+}
+
+interface QualifyingResults {
+  Constructor: Constructor;
+  Driver: Driver;
+  Q1: string;
+  Q2: string;
+  Q3: string;
+  number: string;
+  position: string;
+}
+
+interface Constructor {
+  constructorId: string;
+  name: string;
+  nationality: string;
+  url: string;
 }
