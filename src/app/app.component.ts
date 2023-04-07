@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { F1Service } from './services/f1.service';
+import { Observable } from 'rxjs';
+import { DriverTable } from './utils/driver-table.interface';
 
 @Component({
   selector: 'app-root',
@@ -8,12 +10,11 @@ import { F1Service } from './services/f1.service';
 })
 export class AppComponent implements OnInit {
   title = 'ng-rx';
+  drivers$?: Observable<DriverTable>;
 
   constructor(private f1: F1Service) { }
 
   ngOnInit(): void {
-    this.f1.getDriversPerSeason('2018').subscribe(response => {
-      console.log(response.MRData.DriverTable.season);
-    });
+    this.drivers$ = this.f1.getDriversPerSeason('2018');
   }
 }
