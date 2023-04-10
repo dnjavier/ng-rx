@@ -3,12 +3,19 @@ import { BehaviorSubject, Observable, switchMap, forkJoin, share, map } from 'rx
 import { F1Service } from './f1.service';
 import { DriverTable } from '../utils/driver-table.interface';
 import { DriverSeason } from '../utils/drivers-season.interface';
+import { PaginationControls } from '../utils/pagination-controls.interface';
 
 @Injectable({
   providedIn: 'root'
 })
 export class F1DataService {
 
+  public defaultPagination: PaginationControls = {
+    page: 1,
+    itemsQty: 10,
+    start: 0,
+    end: 10
+  };
   private seasons = ['2018', '2019', '2020', '2021', '2022'];
 
   private driversSeasonSubject = new BehaviorSubject<DriverTable[]>([]);

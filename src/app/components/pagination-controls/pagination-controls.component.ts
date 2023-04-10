@@ -1,4 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { F1DataService } from 'src/app/services/f1-data.service';
+import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
 
 @Component({
   selector: 'app-pagination-controls',
@@ -6,11 +8,14 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
   styleUrls: ['./pagination-controls.component.scss']
 })
 export class PaginationControlsComponent {
-  private itemsQty = 10; // lowest items qty by default
+
+  private itemsQty = this.f1Data.defaultPagination.itemsQty;
 
   @Input() itemsLength: number | undefined = this.itemsQty;
-  @Input() currentPage!: number | null;
-  @Output() controlsChanged = new EventEmitter<{page: number | null, itemsQty: number}>();
+  @Input() currentPage!: number | null | undefined;
+  @Output() controlsChanged = new EventEmitter<PaginationControls>();
+
+  constructor(private f1Data: F1DataService) {}
 
   /**
    * Emits a new items quantity number thorugh the Output
@@ -21,8 +26,11 @@ export class PaginationControlsComponent {
   onItemsQtyChanged(itemsQty: number): void {
     this.itemsQty = itemsQty;
     this.controlsChanged.emit({
-      page: 1, // restart page
-      itemsQty
+      // restart page
+      page: this.f1Data.defaultPagination.page,
+      itemsQty,
+      start: this.f1Data.defaultPagination.start,
+      end: itemsQty
     });
   }
 
@@ -53,15 +61,18 @@ export class PaginationControlsComponent {
   }
 
   /**
-   * Emits a new page number thorugh the Output as part
-   * of the pagination controls and send the current itemsQty.
+   * Emits a new page number with its start and end section
+   * in the array thorugh the Output as part of the pagination
+   * controls and send the current itemsQty.
    * 
    * @param page - Page number to be emitted
    */
   private onPageChanged(page: number): void {
     this.controlsChanged.emit({
       page,
-      itemsQty: this.itemsQty
+      itemsQty: this.itemsQty,
+      start: this.itemsQty * (page - 1),
+      end: this.itemsQty * page
     });
   }
 }

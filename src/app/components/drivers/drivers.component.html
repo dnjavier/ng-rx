@@ -1,0 +1,19 @@
+<app-pagination-controls
+[currentPage]="(paginationSubject | async)?.page"
+[itemsLength]="itemsLength"
+(controlsChanged)="controlsChanged($event)">
+  <table>
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Season</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let driver of pageDrivers">
+        <td>{{ driver.name }}</td>
+        <td>{{ driver.season }}</td>
+      </tr>
+    </tbody>
+  </table>
+</app-pagination-controls>
