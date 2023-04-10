@@ -1,17 +1,23 @@
 <h1>This is an app to practice RxJS</h1>
 
 <button (click)="getDrivers(); toggleTab('drivers');">List of Drivers per season</button>
-<table *ngIf="activeTab === 'drivers' && drivers">
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Season</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr *ngFor="let driver of drivers">
-      <td>{{ driver.name }}</td>
-      <td>{{ driver.season }}</td>
-    </tr>
-  </tbody>
-</table>
+
+<app-pagination-controls *ngIf="activeTab === 'drivers' && pageDrivers"
+[currentPage]="currentPageSubject | async"
+[itemsLength]="allDrivers?.length"
+(controlsChanged)="controlsChanged($event)">
+  <table *ngIf="activeTab === 'drivers' && pageDrivers">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Season</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let driver of pageDrivers">
+        <td>{{ driver.name }}</td>
+        <td>{{ driver.season }}</td>
+      </tr>
+    </tbody>
+  </table>
+</app-pagination-controls>
