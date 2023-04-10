@@ -1,0 +1,12 @@
+<div>
+  <span>Items per page:</span>
+  <button (click)="onItemsQtyChanged(10)">10</button>
+  <button (click)="onItemsQtyChanged(15)">15</button>
+  <button (click)="onItemsQtyChanged(25)">25</button>
+</div>
+<ng-content></ng-content>
+<nav>
+  <button (click)="previousPage()">previuos</button>
+  <span>{{ currentPage }}</span>
+  <button (click)="nextPage()">next</button>
+</nav>
