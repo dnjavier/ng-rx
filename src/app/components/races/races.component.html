@@ -1,0 +1,41 @@
+<app-pagination-controls
+[currentPage]="(paginationSubject | async)?.page"
+[itemsLength]="100"
+(controlsChanged)="controlsChanged($event)">
+  <table>
+    <thead>
+      <tr>
+        <th>Race name</th>
+        <th>Season</th>
+        <th>Results</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let race of races$ | async">
+        <td>{{ race.raceName }}</td>
+        <td>2018</td>
+        <td><button (click)="viewResults(race)">View results</button></td>
+      </tr>
+    </tbody>
+  </table>
+</app-pagination-controls>
+
+<div *ngIf="showResults && raceResults">
+  <button (click)="hideResults()">Back</button>
+  <div>Race name: {{ raceResults[0].raceName }}</div>
+  <div>Results:</div>
+  <table>
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Driver</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let results of raceResults[0].Results">
+        <td>{{ results.position }}</td>
+        <td>{{ results.Driver.givenName + ' ' + results.Driver.familyName }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

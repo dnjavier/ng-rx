@@ -1,5 +1,7 @@
 import { Circuit } from './circuit.interface';
+import { Constructor } from './constructor.interface';
 import { Driver } from './driver.interface';
+import { Result } from './result.interface';
 
 export interface Race {
   Circuit: Circuit;
@@ -13,32 +15,7 @@ export interface Race {
   url: string;
 }
 
-interface Result {
-  Constructor: Constructor;
-  Driver: Driver;
-  FastestLap: {
-    AverageSpeed: {
-      speed: string;
-      units: string;
-    };
-    Time: {
-      time: string;
-    };
-    lap: string;
-    rank: string;
-  };
-  Time: {
-    milis: string;
-    time: string;
-  };
-  grid: string;
-  laps: string;
-  number: string;
-  points: string;
-  position: string;
-  positionText: string;
-  status: string;
-}
+
 
 interface QualifyingResults {
   Constructor: Constructor;
@@ -48,11 +25,4 @@ interface QualifyingResults {
   Q3: string;
   number: string;
   position: string;
-}
-
-interface Constructor {
-  constructorId: string;
-  name: string;
-  nationality: string;
-  url: string;
 }

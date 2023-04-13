@@ -7,12 +7,14 @@ import { HttpClientModule } from '@angular/common/http';
 import { PaginationControlsComponent } from './components/pagination-controls/pagination-controls.component';
 import { APP_ROUTES } from './app.routes';
 import { DriversComponent } from './components/drivers/drivers.component';
+import { RacesComponent } from './components/races/races.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DriversComponent,
-    PaginationControlsComponent
+    PaginationControlsComponent,
+    RacesComponent
   ],
   imports: [
     BrowserModule,

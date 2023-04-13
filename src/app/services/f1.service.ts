@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { SeasonDrivers } from '../utils/season-drivers.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
@@ -38,8 +38,14 @@ export class F1Service {
    * @param year - Season's period
    * @returns An observable with a list of Races
    */
-  public getRacesPerSeason(year: string): Observable<SeasonRaces> {
-    return this.http.get<SeasonRaces>(`${this.baseUrl}/${year}.json`);
+  public getRacesPerSeason(year: string, limit: number, offset: number): Observable<SeasonRaces> {
+    const options = {
+      params: {
+        limit: limit + '',
+        offset: offset + ''
+      }
+    };
+    return this.http.get<SeasonRaces>(`${this.baseUrl}/${year}.json`, options);
   }
 
   /**
@@ -51,6 +57,7 @@ export class F1Service {
    * @returns An observable with a list of races' Results
    */
   public getRaceResultsInSeason(year: string, round: string): Observable<SeasonRacesResults> {
+
     return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/results.json`);
   }
 
