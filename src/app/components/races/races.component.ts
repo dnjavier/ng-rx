@@ -1,5 +1,5 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription, switchMap } from 'rxjs';
+import { BehaviorSubject, Observable, Subscription, switchMap, tap } from 'rxjs';
 import { F1DataService } from 'src/app/services/f1-data.service';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
 import { Race } from 'src/app/utils/race.interface';
@@ -18,8 +18,7 @@ export class RacesComponent implements OnInit, OnDestroy {
   public paginationSubject = new BehaviorSubject<PaginationControls>(this.f1Data.defaultPagination);
   public races$: Observable<Race[]> = this.paginationSubject.asObservable().pipe(
     switchMap(controls => {
-      console.log('controls', controls);
-      return this.f1Data.getRaces('2018', controls.itemsQty, controls.start);
+      return this.f1Data.getRaces(controls.page, controls.itemsQty, controls.start);
     })
   );
 

@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, forkJoin, share, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, forkJoin, share, map, tap, concat, merge, combineLatest, timer } from 'rxjs';
 import { F1Service } from './f1.service';
 import { DriverTable } from '../utils/driver-table.interface';
 import { DriverSeason } from '../utils/drivers-season.interface';
@@ -57,6 +57,14 @@ export class F1DataService {
     return driversSeason;
   }
 
+  /**
+   * Based on the params, it looks for stored data if not, it returns
+   * an observable request to the API.
+   * 
+   * @param season 
+   * @param round 
+   * @returns a list of all the results from a race in a season
+   */
   public getRaceResults(season: string, round: string): Observable<Race[]> {
     const storedResults = this.storedRacesResultsSubject.getValue();
     const isStored = storedResults.find(race => (race.round === round && race.season === season));
@@ -71,6 +79,14 @@ export class F1DataService {
     }
   }
   
+  /**
+   * Makes a request to the API, once it got the response, it
+   * stored the data locally.
+   *
+   * @param season 
+   * @param round 
+   * @returns API request with results data
+   */
   private requestRaceResults(season: string, round: string): Observable<Race[]> {
     return this.f1Service.getRaceResultsInSeason(season, round).pipe(
       tap(data => {
@@ -83,31 +99,58 @@ export class F1DataService {
     );
   }
 
-  public getRaces(season: string, limit: number, offset: number): Observable<Race[]> {
+  // Add subject "isNextPage()"
+
+  /**
+   * Determines what Races should be returned based on the stored values.
+   * If values are not stored, return a request to the API, if values
+   * are return by the API are not enough to complete pagination, it
+   * returns 2 requests combined.
+   * 
+   * @param page
+   * @param limit 
+   * @param offset 
+   * @returns Observable with data stored or request to API
+   */
+  public getRaces(page: number, limit: number, offset: number): Observable<Race[]> {
     const storedRaces = this.storedRacesSubject.getValue();
-    const isStored = storedRaces.find(race => (
-      race.MRData.RaceTable.season === season &&
-      Number(race.MRData.limit) === limit &&
-      Number(race.MRData.offset) === offset
-      ));
-    if (isStored) {
+    const allRaces = this.getAllRaces();
+    const lastSeasonStored = Number(allRaces[allRaces.length - 1]?.season);
+    const lastTotal = Number(storedRaces[storedRaces.length - 1]?.MRData.total);
+    const allRacesLastSeason = allRaces.filter(r => Number(r.season) === lastSeasonStored);
+
+    if (this.isDataStored(page, limit, allRaces, lastSeasonStored, lastTotal)) {
       return this.storedRacesSubject.asObservable().pipe(
         map(races => {
-          let allRaces: Race[] = [];
-          for (let i = 0; i < races.length; i++) {
-            allRaces = allRaces.concat(races[i].MRData.RaceTable.Races);
-          }
-          console.log('allRaces stored', allRaces);
           return allRaces.slice(offset, limit + offset);
         })
       );
+    } else if (this.isCombinedRequest(page, limit, allRacesLastSeason, lastSeasonStored, lastTotal)) {
+      const season = (lastSeasonStored ? lastSeasonStored : Number(this.seasons[0]));
+      const newLimit = lastTotal - allRacesLastSeason.length;
+      return combineLatest([
+        this.requestRaces(season + '', limit, allRacesLastSeason.length),
+        this.requestRaces((season + 1) + '', limit - newLimit, 0)]).pipe(
+          map(data => {
+            return data[0].concat(data[1]);
+          })
+        );
+
     } else {
-      // TO-DO: make validation to make extra request when has reached the limit of races
-      // while going to next pages.
-      return this.requestRaces(season, limit, offset);
+      const season = (lastSeasonStored ? lastSeasonStored : this.seasons[0]) + '';
+      return this.requestRaces(season, limit, allRacesLastSeason.length);
     }
   }
 
+  /**
+   * Makes request to the API and when gets the data,
+   * stores the reponse in a subject locally.
+   *
+   * @param season 
+   * @param limit 
+   * @param offset 
+   * @returns http request as observable
+   */
   private requestRaces(season: string, limit: number, offset: number): Observable<Race[]> {
     return this.f1Service.getRacesPerSeason(season, limit, offset).pipe(
       tap(data => {
@@ -120,4 +163,62 @@ export class F1DataService {
     );
   }
 
+  /**
+   * Validates data obtained from previous requests, in 
+   * order to determine if it is alraeady stored.
+   * 
+   * @param page 
+   * @param limit 
+   * @param allRaces 
+   * @param lastSeasonStored 
+   * @param lastTotal 
+   * @returns true if data is stored
+   */
+  private isDataStored(page: number, limit: number, allRaces: Race[],lastSeasonStored: number, lastTotal: number): boolean {
+    const lastSeason = Number(this.seasons[this.seasons.length - 1]);
+    const isStored = page * limit <= allRaces.length;
+
+    if (isStored || (lastSeason === lastSeasonStored && lastTotal === allRaces.length)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Validates existing data plus values in upcoming request
+   * to determine if it is needed an extra request to complete
+   * data for pagination.
+   * 
+   * @param page 
+   * @param limit 
+   * @param allRacesLastSeason 
+   * @param lastSeasonStored 
+   * @param lastTotal 
+   * @returns 
+   */
+  private isCombinedRequest(page: number, limit: number, allRacesLastSeason: Race[], lastSeasonStored: number, lastTotal: number): boolean {
+    const lastSeason = Number(this.seasons[this.seasons.length - 1]);
+
+    if ((lastTotal - allRacesLastSeason.length) < limit &&
+      lastTotal <= (allRacesLastSeason.length + limit) &&
+      lastSeasonStored < lastSeason && page * limit > lastTotal) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Loops through all previous requests in oder to
+   * make an array with all stored races.
+   * 
+   * @returns List of all races from all seasons
+   */
+  private getAllRaces(): Race[] {
+    const storedRaces = this.storedRacesSubject.getValue();
+    let allRaces: Race[] = [];
+    for (let i = 0; i < storedRaces.length; i++) {
+      allRaces = allRaces.concat(storedRaces[i].MRData.RaceTable.Races);
+    }
+    return allRaces;
+  }
 }

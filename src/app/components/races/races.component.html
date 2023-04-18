@@ -1,6 +1,6 @@
 <app-pagination-controls
 [currentPage]="(paginationSubject | async)?.page"
-[itemsLength]="100"
+[itemsLength]="200"
 (controlsChanged)="controlsChanged($event)">
   <table>
     <thead>
@@ -13,7 +13,7 @@
     <tbody>
       <tr *ngFor="let race of races$ | async">
         <td>{{ race.raceName }}</td>
-        <td>2018</td>
+        <td>{{ race.season }}</td>
         <td><button (click)="viewResults(race)">View results</button></td>
       </tr>
     </tbody>
