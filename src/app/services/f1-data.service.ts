@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, forkJoin, share, map, tap, concat, merge, combineLatest, timer } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, forkJoin, share, map, tap, combineLatest } from 'rxjs';
 import { F1Service } from './f1.service';
 import { DriverTable } from '../utils/driver-table.interface';
 import { DriverSeason } from '../utils/drivers-season.interface';
@@ -22,8 +22,11 @@ export class F1DataService {
 
   private storedRacesResultsSubject = new BehaviorSubject<Race[]>([]);
   private storedRacesSubject = new BehaviorSubject<SeasonRaces[]>([]);
-  private driversSeasonSubject = new BehaviorSubject<DriverTable[]>([]);
 
+  private isRacePendingSubject = new BehaviorSubject<boolean>(true);
+  isRacePending$: Observable<boolean> = this.isRacePendingSubject.asObservable();
+
+  private driversSeasonSubject = new BehaviorSubject<DriverTable[]>([]);
   driversSeason$: Observable<DriverSeason[]> = this.driversSeasonSubject.asObservable().pipe(
     switchMap(() => {
       return forkJoin(this.seasons.map(year => this.f1Service.getDriversPerSeason(year)));
@@ -99,8 +102,6 @@ export class F1DataService {
     );
   }
 
-  // Add subject "isNextPage()"
-
   /**
    * Determines what Races should be returned based on the stored values.
    * If values are not stored, return a request to the API, if values
@@ -144,7 +145,8 @@ export class F1DataService {
 
   /**
    * Makes request to the API and when gets the data,
-   * stores the reponse in a subject locally.
+   * stores the reponse in a subject locally. Update 
+   * property to determine if there are pending races.
    *
    * @param season 
    * @param limit 
@@ -158,6 +160,15 @@ export class F1DataService {
         const existingData = this.storedRacesSubject.getValue();
         existingData.push(newData);
         this.storedRacesSubject.next(existingData);
+
+        const lastSeason = this.seasons[this.seasons.length - 1];
+        const lengthRacesLastSeason = offset + data.MRData.RaceTable.Races.length;
+        if (lastSeason === data.MRData.RaceTable.season && lengthRacesLastSeason === Number(data.MRData.total)) {
+          // all races has been requested to the API
+          this.isRacePendingSubject.next(false);
+        } else {
+          this.isRacePendingSubject.next(true);
+        }
       }),
       map(data => data.MRData.RaceTable.Races)
     );
@@ -174,9 +185,17 @@ export class F1DataService {
    * @param lastTotal 
    * @returns true if data is stored
    */
-  private isDataStored(page: number, limit: number, allRaces: Race[],lastSeasonStored: number, lastTotal: number): boolean {
+  private isDataStored(page: number, limit: number, allRaces: Race[], lastSeasonStored: number, lastTotal: number): boolean {
     const lastSeason = Number(this.seasons[this.seasons.length - 1]);
     const isStored = page * limit <= allRaces.length;
+    const allRacesLastSeason = allRaces.filter(r => Number(r.season) === lastSeasonStored);
+
+    if (lastSeason === lastSeasonStored && allRacesLastSeason.length === lastTotal) {
+      // all races has been requested to the API
+      this.isRacePendingSubject.next(false);
+    } else {
+      this.isRacePendingSubject.next(true);
+    }
 
     if (isStored || (lastSeason === lastSeasonStored && lastTotal === allRaces.length)) {
       return true;

@@ -15,6 +15,7 @@ export class RacesComponent implements OnInit, OnDestroy {
   raceResults: any;
   races!: any[];
   results!: any[] | undefined;
+  public pendingPages$: Observable<boolean> = this.f1Data.isRacePending$;
   public paginationSubject = new BehaviorSubject<PaginationControls>(this.f1Data.defaultPagination);
   public races$: Observable<Race[]> = this.paginationSubject.asObservable().pipe(
     switchMap(controls => {

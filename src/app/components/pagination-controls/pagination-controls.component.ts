@@ -11,8 +11,9 @@ export class PaginationControlsComponent {
 
   private itemsQty = this.f1Data.defaultPagination.itemsQty;
 
-  @Input() itemsLength: number | undefined = this.itemsQty;
+  @Input() itemsLength: number | undefined;
   @Input() currentPage!: number | null | undefined;
+  @Input() isMorePages!: boolean | null;
   @Output() controlsChanged = new EventEmitter<PaginationControls>();
 
   constructor(private f1Data: F1DataService) {}
@@ -45,7 +46,7 @@ export class PaginationControlsComponent {
   }
 
   /**
-   * CalculateS the next page number based on the
+   * Calculates the next page number based on the
    * currentPage value, and validates maximum of pages
    * is not exceeded.
    */
@@ -57,6 +58,8 @@ export class PaginationControlsComponent {
       if (this.currentPage < maxPage) {
         this.onPageChanged(this.currentPage + 1);
       }
+    } else if (this.isMorePages && this.currentPage) {
+      this.onPageChanged(this.currentPage + 1);
     }
   }
 
