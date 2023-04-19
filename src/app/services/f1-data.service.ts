@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, forkJoin, share, map, tap, combineLatest } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap, forkJoin, share, map, tap, combineLatest, empty, of } from 'rxjs';
 import { F1Service } from './f1.service';
 import { DriverTable } from '../utils/driver-table.interface';
 import { DriverSeason } from '../utils/drivers-season.interface';
@@ -163,8 +163,7 @@ export class F1DataService {
             } else {
             return data;
           }
-          // Add extra request if missing items
-        })
+        }),
       );
     }
   }
@@ -240,7 +239,6 @@ export class F1DataService {
    */
   private isCombinedRequest(page: number, limit: number, allRacesLastSeason: Race[], lastSeasonStored: number, lastTotal: number): boolean {
     const lastSeason = Number(this.seasons[this.seasons.length - 1]);
-
     if ((lastTotal - allRacesLastSeason.length) < limit &&
         lastTotal <= (allRacesLastSeason.length + limit) &&
         lastSeasonStored < lastSeason && page * limit > lastTotal) {
