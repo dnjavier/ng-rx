@@ -32,7 +32,7 @@ export class RacesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.results$.unsubscribe();
+    this.results$?.unsubscribe();
   }
 
   /**

@@ -8,13 +8,15 @@ import { PaginationControlsComponent } from './components/pagination-controls/pa
 import { APP_ROUTES } from './app.routes';
 import { DriversComponent } from './components/drivers/drivers.component';
 import { RacesComponent } from './components/races/races.component';
+import { QualifyingComponent } from './components/qualifying/qualifying.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     DriversComponent,
     PaginationControlsComponent,
-    RacesComponent
+    RacesComponent,
+    QualifyingComponent
   ],
   imports: [
     BrowserModule,
