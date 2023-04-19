@@ -120,26 +120,52 @@ export class F1DataService {
     const lastTotal = Number(storedRaces[storedRaces.length - 1]?.MRData.total);
     const allRacesLastSeason = allRaces.filter(r => Number(r.season) === lastSeasonStored);
 
+    // Returns data that is stored locally
     if (this.isDataStored(page, limit, allRaces, lastSeasonStored, lastTotal)) {
       return this.storedRacesSubject.asObservable().pipe(
         map(races => {
           return allRaces.slice(offset, limit + offset);
         })
       );
+
+    // Returns multiple requests to complete items on page
     } else if (this.isCombinedRequest(page, limit, allRacesLastSeason, lastSeasonStored, lastTotal)) {
       const season = (lastSeasonStored ? lastSeasonStored : Number(this.seasons[0]));
-      const newLimit = lastTotal - allRacesLastSeason.length;
+      const missingRaces = lastTotal - allRacesLastSeason.length;
+
+      let newLimit = limit;
+      if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
+        newLimit = limit - allRaces.length;
+      }
       return combineLatest([
-        this.requestRaces(season + '', limit, allRacesLastSeason.length),
-        this.requestRaces((season + 1) + '', limit - newLimit, 0)]).pipe(
+        this.requestRaces(season + '', newLimit, allRacesLastSeason.length),
+        this.requestRaces((season + 1) + '', newLimit - missingRaces, 0)]).pipe(
           map(data => {
-            return data[0].concat(data[1]);
+            if (allRaces.length < limit && page === 1) {
+              return allRaces.concat(data[0]).concat(data[1]);
+            } else {
+              return data[0].concat(data[1]);
+            }
           })
         );
 
+    // Returns a request with data
     } else {
       const season = (lastSeasonStored ? lastSeasonStored : this.seasons[0]) + '';
-      return this.requestRaces(season, limit, allRacesLastSeason.length);
+      let newLimit = limit;
+      if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
+        newLimit = limit - allRaces.length;
+      }
+      return this.requestRaces(season, newLimit, allRacesLastSeason.length).pipe(
+        map(data => {
+            if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
+              return allRaces.concat(data);
+            } else {
+            return data;
+          }
+          // Add extra request if missing items
+        })
+      );
     }
   }
 
@@ -190,15 +216,12 @@ export class F1DataService {
     const isStored = page * limit <= allRaces.length;
     const allRacesLastSeason = allRaces.filter(r => Number(r.season) === lastSeasonStored);
 
-    if (lastSeason === lastSeasonStored && allRacesLastSeason.length === lastTotal) {
-      // all races has been requested to the API
-      this.isRacePendingSubject.next(false);
-    } else {
+    if (isStored) {
       this.isRacePendingSubject.next(true);
-    }
-
-    if (isStored || (lastSeason === lastSeasonStored && lastTotal === allRaces.length)) {
       return true;
+    } else if (lastSeason === lastSeasonStored && lastTotal === allRacesLastSeason.length) {
+      this.isRacePendingSubject.next(false);
+      return true
     }
     return false;
   }
@@ -219,8 +242,8 @@ export class F1DataService {
     const lastSeason = Number(this.seasons[this.seasons.length - 1]);
 
     if ((lastTotal - allRacesLastSeason.length) < limit &&
-      lastTotal <= (allRacesLastSeason.length + limit) &&
-      lastSeasonStored < lastSeason && page * limit > lastTotal) {
+        lastTotal <= (allRacesLastSeason.length + limit) &&
+        lastSeasonStored < lastSeason && page * limit > lastTotal) {
       return true;
     }
     return false;
@@ -239,5 +262,21 @@ export class F1DataService {
       allRaces = allRaces.concat(storedRaces[i].MRData.RaceTable.Races);
     }
     return allRaces;
+  }
+
+  /**
+   * Validates if the QTY of items has changed on 
+   * the first page.
+   *
+   * @param limit 
+   * @param page 
+   * @param allRaces 
+   * @returns True if the QTY of items changed
+   */
+  private isItemsChangedFirstPage(limit: number, page: number, allRaces: Race[]): boolean {
+    if (allRaces.length < limit && page === 1) {
+      return true;
+    }
+    return false;
   }
 }
