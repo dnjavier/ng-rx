@@ -36,6 +36,8 @@ export class F1Service {
    * that happened in the season accordingly.
    * 
    * @param year - Season's period
+   * @param limit - Max values returned
+   * @param offset - Starting index
    * @returns An observable with a list of Races
    */
   public getRacesPerSeason(year: string, limit: number, offset: number): Observable<SeasonRaces> {
@@ -57,7 +59,6 @@ export class F1Service {
    * @returns An observable with a list of races' Results
    */
   public getRaceResultsInSeason(year: string, round: string): Observable<SeasonRacesResults> {
-
     return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/results.json`);
   }
 
@@ -69,7 +70,13 @@ export class F1Service {
    * @param round - Race sequence number
    * @returns An observable with a list of Qualifying results
    */
-  public getQualifyingResultsInRaceAndSeason(year: string, round: string): Observable<SeasonQualifyingResults> {
-    return this.http.get<SeasonQualifyingResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`);
+  public getQualifyingResultsInRaceAndSeason(year: string, round: string, limit: number, offset: number): Observable<SeasonQualifyingResults> {
+    const options = {
+      params: {
+        limit: limit + '',
+        offset: offset + ''
+      }
+    };
+    return this.http.get<SeasonQualifyingResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`, options);
   }
 }

@@ -1,4 +1,4 @@
-<app-pagination-controls
+<app-pagination-controls *ngIf="!showResults"
 [currentPage]="(paginationSubject | async)?.page"
 [isMorePages]="pendingPages$ | async"
 (controlsChanged)="controlsChanged($event)">

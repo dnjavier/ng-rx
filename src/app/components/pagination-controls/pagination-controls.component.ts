@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { F1DataService } from 'src/app/services/f1-data.service';
+import { GlobalConstants } from 'src/app/utils/global-constants';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
 
 @Component({
@@ -9,7 +10,7 @@ import { PaginationControls } from 'src/app/utils/pagination-controls.interface'
 })
 export class PaginationControlsComponent {
 
-  private itemsQty = this.f1Data.defaultPagination.itemsQty;
+  private itemsQty = GlobalConstants.defaultPagination.itemsQty;
 
   @Input() itemsLength: number | undefined;
   @Input() currentPage!: number | null | undefined;
@@ -28,9 +29,9 @@ export class PaginationControlsComponent {
     this.itemsQty = itemsQty;
     this.controlsChanged.emit({
       // restart page
-      page: this.f1Data.defaultPagination.page,
+      page: GlobalConstants.defaultPagination.page,
       itemsQty,
-      start: this.f1Data.defaultPagination.start,
+      start: GlobalConstants.defaultPagination.start,
       end: itemsQty
     });
   }

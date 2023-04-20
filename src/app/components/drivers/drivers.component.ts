@@ -3,6 +3,7 @@ import { DriverSeason } from 'src/app/utils/drivers-season.interface';
 import { Subscription, BehaviorSubject } from 'rxjs';
 import { F1DataService } from 'src/app/services/f1-data.service';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
+import { GlobalConstants } from 'src/app/utils/global-constants';
 
 @Component({
   selector: 'app-drivers',
@@ -13,7 +14,7 @@ export class DriversComponent implements OnInit {
 
   public pageDrivers?: DriverSeason[];
   public itemsLength!: number;
-  public paginationSubject = new BehaviorSubject<PaginationControls>(this.f1Data.defaultPagination);
+  public paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
   private drivers$?: Subscription;
   private items$?: Subscription;
 

@@ -1,6 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription, switchMap, tap } from 'rxjs';
-import { F1DataService } from 'src/app/services/f1-data.service';
+import { BehaviorSubject, Observable, Subscription, switchMap } from 'rxjs';
+import { RaceDataService } from 'src/app/services/race-data.service';
+import { GlobalConstants } from 'src/app/utils/global-constants';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
 import { Race } from 'src/app/utils/race.interface';
 
@@ -15,17 +16,17 @@ export class RacesComponent implements OnInit, OnDestroy {
   raceResults: any;
   races!: any[];
   results!: any[] | undefined;
-  public pendingPages$: Observable<boolean> = this.f1Data.isRacePending$;
-  public paginationSubject = new BehaviorSubject<PaginationControls>(this.f1Data.defaultPagination);
-  public races$: Observable<Race[]> = this.paginationSubject.asObservable().pipe(
+  pendingPages$: Observable<boolean> = this.dataService.isRacePending$;
+  paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
+  races$: Observable<Race[]> = this.paginationSubject.asObservable().pipe(
     switchMap(controls => {
-      return this.f1Data.getRaces(controls.page, controls.itemsQty, controls.start);
+      return this.dataService.getRaces(controls.page, controls.itemsQty, controls.start);
     })
   );
 
   private results$!: Subscription;
 
-  constructor(private f1Data: F1DataService) { }
+  constructor(private dataService: RaceDataService) { }
 
   ngOnInit(): void {
 
@@ -48,9 +49,13 @@ export class RacesComponent implements OnInit, OnDestroy {
     }
   }
 
-  viewResults(race: any): void {
+  /**
+   * 
+   * @param race 
+   */
+  viewResults(race: Race): void {
     this.showResults = true;
-    this.results$ = this.f1Data.getRaceResults(race.season, race.round).subscribe(data => {
+    this.results$ = this.dataService.getRaceResults(race.season, race.round).subscribe(data => {
       this.raceResults = data;
     });
   }
