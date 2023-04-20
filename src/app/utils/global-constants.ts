@@ -1,7 +1,7 @@
 import { PaginationControls } from "./pagination-controls.interface";
 
 export class GlobalConstants {
-  static seasons = ['2018', '2019', '2020', '2021', '2022'];
+  static seasons = [2018, 2019, 2020, 2021, 2022];
 
   static defaultPagination: PaginationControls = {
     page: 1,

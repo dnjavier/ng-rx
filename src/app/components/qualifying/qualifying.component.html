@@ -1,1 +1,29 @@
-<p>qualifying works!</p>
+<app-pagination-controls
+[currentPage]="(paginationSubject | async)?.page"
+[itemsLength]="200"
+(controlsChanged)="controlsChanged($event)">
+  <table>
+    <thead>
+      <tr>
+        <th>Race name</th>
+        <th>Driver's name</th>
+        <th>Q1</th>
+        <th>Q2</th>
+        <th>Q3</th>
+        <th>Season</th>
+      </tr>
+    </thead>
+    <tbody>
+      <ng-container *ngFor="let race of races$ | async">
+        <tr *ngFor="let results of race.QualifyingResults">
+          <td>{{ race.raceName }}</td>
+          <td>{{ results.Driver.givenName + ' ' + results.Driver.familyName }}</td>
+          <td>{{ results.Q1 }}</td>
+          <td>{{ results.Q2 }}</td>
+          <td>{{ results.Q3 }}</td>
+          <td>{{ race.season }}</td>
+        </tr>
+      </ng-container>
+    </tbody>
+  </table>
+</app-pagination-controls>

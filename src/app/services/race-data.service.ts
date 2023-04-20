@@ -77,8 +77,8 @@ export class RaceDataService {
         newLimit = limit - allRaces.length;
       }
       return combineLatest([
-        this.requestRaces(season + '', newLimit, allRacesLastSeason.length),
-        this.requestRaces((season + 1) + '', newLimit - missingRaces, 0)]).pipe(
+        this.requestRaces(season, newLimit, allRacesLastSeason.length),
+        this.requestRaces((season + 1), newLimit - missingRaces, 0)]).pipe(
           map(data => {
             if (allRaces.length < limit && page === 1) {
               return allRaces.concat(data[0]).concat(data[1]);
@@ -90,7 +90,7 @@ export class RaceDataService {
 
     // Returns a request with data
     } else {
-      const season = (lastSeasonStored ? lastSeasonStored : GlobalConstants.seasons[0]) + '';
+      const season = (lastSeasonStored ? lastSeasonStored : GlobalConstants.seasons[0]);
       let newLimit = limit;
       if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
         newLimit = limit - allRaces.length;
@@ -106,7 +106,38 @@ export class RaceDataService {
       );
     }
   }
-  
+
+  /**
+   * Makes request to the API and when gets the data,
+   * stores the reponse in a subject locally. Update 
+   * property to determine if there are pending races.
+   *
+   * @param season 
+   * @param limit 
+   * @param offset 
+   * @returns http request as observable
+   */
+  public requestRaces(season: number, limit: number, offset: number): Observable<Race[]> {
+    return this.f1Service.getRacesPerSeason(season, limit, offset).pipe(
+      tap(data => {
+        const newData = data;
+        const existingData = this.storedRacesSubject.getValue();
+        existingData.push(newData);
+        this.storedRacesSubject.next(existingData);
+
+        const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
+        const lengthRacesLastSeason = offset + data.MRData.RaceTable.Races.length;
+        if (lastSeason === Number(data.MRData.RaceTable.season) && lengthRacesLastSeason === Number(data.MRData.total)) {
+          // all races has been requested to the API
+          this.isRacePendingSubject.next(false);
+        } else {
+          this.isRacePendingSubject.next(true);
+        }
+      }),
+      map(data => data.MRData.RaceTable.Races)
+    );
+  }
+
   /**
    * Makes a request to the API, once it got the response, it
    * stored the data locally.
@@ -122,37 +153,6 @@ export class RaceDataService {
         const existingResults = this.storedRacesResultsSubject.getValue();
         existingResults.push(newResults);
         this.storedRacesResultsSubject.next(existingResults)
-      }),
-      map(data => data.MRData.RaceTable.Races)
-    );
-  }
-
-  /**
-   * Makes request to the API and when gets the data,
-   * stores the reponse in a subject locally. Update 
-   * property to determine if there are pending races.
-   *
-   * @param season 
-   * @param limit 
-   * @param offset 
-   * @returns http request as observable
-   */
-  private requestRaces(season: string, limit: number, offset: number): Observable<Race[]> {
-    return this.f1Service.getRacesPerSeason(season, limit, offset).pipe(
-      tap(data => {
-        const newData = data;
-        const existingData = this.storedRacesSubject.getValue();
-        existingData.push(newData);
-        this.storedRacesSubject.next(existingData);
-
-        const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
-        const lengthRacesLastSeason = offset + data.MRData.RaceTable.Races.length;
-        if (lastSeason === data.MRData.RaceTable.season && lengthRacesLastSeason === Number(data.MRData.total)) {
-          // all races has been requested to the API
-          this.isRacePendingSubject.next(false);
-        } else {
-          this.isRacePendingSubject.next(true);
-        }
       }),
       map(data => data.MRData.RaceTable.Races)
     );

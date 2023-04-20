@@ -23,7 +23,7 @@ export class F1Service {
    * @param year - Season's period
    * @returns An observable with a list of Drivers
    */
-  public getDriversPerSeason(year: string): Observable<DriverTable> {
+  public getDriversPerSeason(year: number): Observable<DriverTable> {
     return this.http.get<SeasonDrivers>(`${this.baseUrl}/${year}/drivers.json`).pipe(
       map(data => {
         return data.MRData.DriverTable;
@@ -40,7 +40,7 @@ export class F1Service {
    * @param offset - Starting index
    * @returns An observable with a list of Races
    */
-  public getRacesPerSeason(year: string, limit: number, offset: number): Observable<SeasonRaces> {
+  public getRacesPerSeason(year: number, limit: number, offset: number): Observable<SeasonRaces> {
     const options = {
       params: {
         limit: limit + '',
@@ -70,7 +70,7 @@ export class F1Service {
    * @param round - Race sequence number
    * @returns An observable with a list of Qualifying results
    */
-  public getQualifyingResultsInRaceAndSeason(year: string, round: string, limit: number, offset: number): Observable<SeasonQualifyingResults> {
+  public getQualifyingResultsInRaceAndSeason(year: number, round: number, limit: number, offset: number): Observable<SeasonQualifyingResults> {
     const options = {
       params: {
         limit: limit + '',
