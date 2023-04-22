@@ -88,7 +88,9 @@ export class QualifyingDataService {
       this.storedResultsLastRound = [];
     }
 
-    return this.f1Service.getQualifyingResultsInRaceAndSeason(season, this.latestRound, this.getLimit(controls), offset).pipe(
+    const limit = Helper.calcLimit(controls, resultsLastestRound.length);
+
+    return this.f1Service.getQualifyingResultsInRaceAndSeason(season, this.latestRound, limit, offset).pipe(
       tap(data => {
         this.latestRequest = data;
         this.updatePendingData(data, lastSeason);
@@ -144,29 +146,6 @@ export class QualifyingDataService {
         }
       }
     }
-  }
-
-  /**
-   * Based on the pagination controls and the
-   * stored results, determines the new limit.
-   * 
-   * @param controls Pagination controls
-   * @returns limit
-   */
-  private getLimit(controls: PaginationControls): number {
-    let limit = controls.itemsQty;
-    if (controls.page === 1) {
-      let allResultsRoundLength = 0;
-      this.storedResultsLastRound.map(r => {
-        if (r.QualifyingResults) {
-          allResultsRoundLength += r.QualifyingResults?.length;
-        }
-      });
-      if (allResultsRoundLength && allResultsRoundLength < limit) {
-        limit -= allResultsRoundLength;
-      }
-    }
-    return limit;
   }
 
   /**

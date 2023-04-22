@@ -1,3 +1,4 @@
+import { PaginationControls } from "./pagination-controls.interface";
 
 export class Helper {
 
@@ -17,5 +18,22 @@ export class Helper {
     }
 
     return offset;
+  }
+
+  /**
+   * Based on the pagination controls and the
+   * stored data, determines the new limit.
+   * 
+   * @param controls Pagination controls
+   * @returns limit
+   */
+  static calcLimit(controls: PaginationControls, dataLengthLastRound: number): number {
+    let limit = controls.itemsQty;
+    if (controls.page === 1) {
+      if (dataLengthLastRound && dataLengthLastRound < limit) {
+        limit -= dataLengthLastRound;
+      }
+    }
+    return limit;
   }
 }
