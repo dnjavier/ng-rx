@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { SeasonDrivers } from '../utils/season-drivers.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { SeasonRacesResults } from '../utils/season-races-results.interface';
 import { SeasonQualifyingResults } from '../utils/season-qualifying.interface';
 import { DriverTable } from '../utils/driver-table.interface';
+import { Standings } from '../utils/driver-standings.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -56,6 +57,8 @@ export class F1Service {
    * 
    * @param year - Season's period
    * @param round - Race sequence number
+   * @param limit - Max values returned
+   * @param offset - Starting index
    * @returns An observable with a list of races' Results
    */
   public getRaceResultsInSeason(year: string, round: string): Observable<SeasonRacesResults> {
@@ -68,6 +71,8 @@ export class F1Service {
    * 
    * @param year - Season's period
    * @param round - Race sequence number
+   * @param limit - Max values returned
+   * @param offset - Starting index
    * @returns An observable with a list of Qualifying results
    */
   public getQualifyingResultsInRaceAndSeason(year: number, round: number, limit: number, offset: number): Observable<SeasonQualifyingResults> {
@@ -78,5 +83,25 @@ export class F1Service {
       }
     };
     return this.http.get<SeasonQualifyingResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`, options);
+  }
+
+  /**
+   * Makes a request to the API in order to get the Driver standings
+   * after a race.
+   * 
+   * @param year - Season's period
+   * @param round - Race sequence number
+   * @param limit - Max values returned
+   * @param offset - Starting index
+   * @returns An observable with a list of Driver Standings
+   */
+  public getDriverStandings(year: number, round: number, limit: number, offset: number): Observable<Standings> {
+    const options = {
+      params: {
+        limit: limit + '',
+        offset: offset + ''
+      }
+    };
+    return this.http.get<Standings>(`${this.baseUrl}/${year}/${round}/driverStandings.json`, options);
   }
 }
