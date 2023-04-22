@@ -15,9 +15,7 @@ export interface Race {
   url: string;
 }
 
-
-
-interface QualifyingResults {
+export interface QualifyingResults {
   Constructor: Constructor;
   Driver: Driver;
   Q1: string;
@@ -25,4 +23,7 @@ interface QualifyingResults {
   Q3: string;
   number: string;
   position: string;
+  season?: string;
+  raceName?: string;
+  round?: number;
 }
