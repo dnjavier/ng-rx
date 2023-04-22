@@ -106,9 +106,7 @@ export class QualifyingDataService {
           return forkJoin([of(data)]);
         }
       }),
-      tap(data => {
-        this.storeRacesAndResults(data);
-      }),
+      tap(data => this.storeRacesAndResults(data)),
       map(data => {
         // return the last items in all results
         let results = this.storedAllQResults.slice(-controls.itemsQty);

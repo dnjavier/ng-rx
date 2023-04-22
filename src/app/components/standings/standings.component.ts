@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import { BehaviorSubject, Observable, switchMap } from 'rxjs';
 import { StandingsDataService } from 'src/app/services/standings-data.service';
 import { DriverStandings } from 'src/app/utils/driver-standings.interface';

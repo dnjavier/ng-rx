@@ -5,12 +5,16 @@
   <table>
     <thead>
       <tr>
+        <th>Season</th>
+        <th>Round</th>
         <th>Position</th>
         <th>Driver's name</th>
       </tr>
     </thead>
     <tbody>
       <tr *ngFor="let stand of standings$ | async">
+        <td>{{ stand.season }}</td>
+        <td>{{ stand.round }}</td>
         <td>{{ stand.position }}</td>
         <td>{{ stand.Driver.givenName + ' ' + stand.Driver.familyName }}</td>
       </tr>
