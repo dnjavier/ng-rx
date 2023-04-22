@@ -83,6 +83,7 @@ export class QualifyingDataService {
 
     // Reset offset and result if is requesting next page
     if (this.latestRound < Number(this.latestSeasonRequest?.MRData.total) &&
+      resultsLastestRound.length === Number(this.latestRequest?.MRData.total) &&
       offset >= Number(this.latestRequest?.MRData.total)) {
       this.latestRound++;
       offset = 0;
@@ -157,12 +158,10 @@ export class QualifyingDataService {
    */
   private getOffset(): number {
     let offset = 0;
-    if (this.storedResultsLastRound.length) {
-      this.storedResultsLastRound.map(data => {
-        if (data.QualifyingResults) {
-          offset += data.QualifyingResults?.length;
-        }
-      });
+    const resultsLastestRound = this.storedAllQResults.filter(r => 
+      Number(r.season) === this.latestSeasonRequested && r.round === this.latestRound);
+    if (resultsLastestRound.length) {
+      offset += resultsLastestRound.length;
     }
     return offset;
   }

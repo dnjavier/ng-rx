@@ -12,9 +12,7 @@ import { QualifyingResults } from 'src/app/utils/race.interface';
 })
 export class QualifyingComponent {
 
-  pendingPages$: Observable<boolean> = this.dataService.isResultsPending$.pipe(
-    tap(data => console.log('pending results: ', data))
-  );
+  pendingPages$: Observable<boolean> = this.dataService.isResultsPending$;
   paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
   races$: Observable<QualifyingResults[]> = this.paginationSubject.asObservable().pipe(
     switchMap(controls => {
