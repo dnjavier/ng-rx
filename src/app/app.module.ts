@@ -9,6 +9,7 @@ import { APP_ROUTES } from './app.routes';
 import { DriversComponent } from './components/drivers/drivers.component';
 import { RacesComponent } from './components/races/races.component';
 import { QualifyingComponent } from './components/qualifying/qualifying.component';
+import { StandingsComponent } from './components/standings/standings.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { QualifyingComponent } from './components/qualifying/qualifying.componen
     DriversComponent,
     PaginationControlsComponent,
     RacesComponent,
-    QualifyingComponent
+    QualifyingComponent,
+    StandingsComponent
   ],
   imports: [
     BrowserModule,
