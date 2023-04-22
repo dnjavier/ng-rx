@@ -7,6 +7,7 @@ import { PaginationControls } from '../utils/pagination-controls.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { GlobalConstants } from '../utils/global-constants';
 import { QualifyingResults } from '../utils/qualifying-results.interface';
+import { Helper } from '../utils/helper.class';
 
 @Injectable({
   providedIn: 'root'
@@ -62,7 +63,7 @@ export class QualifyingDataService {
       return of(this.storedAllQResults.slice(controls.start, controls.end));
     }
 
-    let offset = this.getOffset();
+    let offset = Helper.calcOffset(this.storedAllQResults, this.latestSeasonRequested, this.latestRound);
     let season = Number(seasonRace.MRData.RaceTable.season);
     const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
 
@@ -145,22 +146,6 @@ export class QualifyingDataService {
         }
       }
     }
-  }
-
-  /**
-   * Based on the existing results and the last round,
-   * determines which is starting index for the next values
-   * 
-   * @returns starting index for the next set of results
-   */
-  private getOffset(): number {
-    let offset = 0;
-    const resultsLastestRound = this.storedAllQResults.filter(r => 
-      Number(r.season) === this.latestSeasonRequested && r.round === this.latestRound);
-    if (resultsLastestRound.length) {
-      offset += resultsLastestRound.length;
-    }
-    return offset;
   }
 
   /**
