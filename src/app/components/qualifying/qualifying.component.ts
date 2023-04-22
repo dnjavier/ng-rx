@@ -1,9 +1,9 @@
 import { Component } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, switchMap } from 'rxjs';
 import { QualifyingDataService } from 'src/app/services/qualifying-data.service';
 import { GlobalConstants } from 'src/app/utils/global-constants';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
-import { QualifyingResults } from 'src/app/utils/race.interface';
+import { QualifyingResults } from 'src/app/utils/qualifying-results.interface';
 
 @Component({
   selector: 'app-qualifying',

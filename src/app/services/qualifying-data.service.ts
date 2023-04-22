@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { SeasonQualifyingResults } from '../utils/season-qualifying.interface';
-import { QualifyingResults, Race } from '../utils/race.interface';
+import { Race } from '../utils/race.interface';
 import { F1Service } from './f1.service';
 import { PaginationControls } from '../utils/pagination-controls.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { GlobalConstants } from '../utils/global-constants';
+import { QualifyingResults } from '../utils/qualifying-results.interface';
 
 @Injectable({
   providedIn: 'root'
