@@ -1,1 +1,19 @@
-<p>standings works!</p>
+<app-pagination-controls
+[currentPage]="(paginationSubject | async)?.page"
+[itemsLength]="1000"
+(controlsChanged)="controlsChanged($event)">
+  <table>
+    <thead>
+      <tr>
+        <th>Position</th>
+        <th>Driver's name</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let stand of standings$ | async">
+        <td>{{ stand.position }}</td>
+        <td>{{ stand.Driver.givenName + ' ' + stand.Driver.familyName }}</td>
+      </tr>
+    </tbody>
+  </table>
+</app-pagination-controls>

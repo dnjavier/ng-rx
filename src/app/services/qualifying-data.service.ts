@@ -42,12 +42,8 @@ export class QualifyingDataService {
     } else {
       // Get only first race of the season
       return this.f1Service.getRacesPerSeason(season, 1, 0).pipe(
-        tap(data => {
-          this.latestSeasonRequest = data;
-        }),
-        switchMap(data => {
-          return this.getRacesResult(controls, data)
-        })
+        tap(data => this.latestSeasonRequest = data),
+        switchMap(data => this.getRacesResult(controls, data))
       );
     }
   }

@@ -41,7 +41,7 @@ export class F1Service {
    * @param offset - Starting index
    * @returns An observable with a list of Races
    */
-  public getRacesPerSeason(year: number, limit: number, offset: number): Observable<SeasonRaces> {
+  public getRacesPerSeason(year: number, limit?: number, offset?: number): Observable<SeasonRaces> {
     const options = {
       params: {
         limit: limit + '',

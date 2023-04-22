@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest, map, tap } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, map, of, tap } from 'rxjs';
 import { Race } from '../utils/race.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { F1Service } from './f1.service';
@@ -135,6 +135,24 @@ export class RaceDataService {
         }
       }),
       map(data => data.MRData.RaceTable.Races)
+    );
+  }
+
+  /**
+   * Makes request to the API and when gets the data,
+   * stores the reponse in a subject locally.
+   * 
+   * @param season 
+   * @returns http request as observable
+   */
+  public getSeasonRaces(season: number, limit: number): Observable<SeasonRaces> {
+    const seasonRace = this.storedRacesSubject.getValue().find(r => r.MRData.RaceTable.season === (season + ''));
+    if (seasonRace) {
+      return of(seasonRace);
+    }
+
+    return this.f1Service.getRacesPerSeason(season, limit).pipe(
+      tap(data => this.storedRacesSubject.next([data]))
     );
   }
 
