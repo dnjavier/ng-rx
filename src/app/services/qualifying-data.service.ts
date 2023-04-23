@@ -58,17 +58,30 @@ export class QualifyingDataService {
    * @returns 
    */
   private getRacesResult(controls: PaginationControls, seasonRace: SeasonRaces): Observable<QualifyingResults[]> {
+    let season = Number(seasonRace.MRData.RaceTable.season);
+    const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
+    const resultsLastestRound = this.storedAllQResults.filter(r => Number(r.season) === season && r.round === this.latestRound);
+
     // is data stored
     if (controls.page * controls.itemsQty <= this.storedAllQResults.length) {
-      return of(this.storedAllQResults.slice(controls.start, controls.end));
+      const results = this.storedAllQResults.slice(controls.start, controls.end);
+      this.isResultsPendingSubject.next(true);
+      return of(results);
+
+    // has all data stored
+    } else if (this.storedAllQResults &&
+              this.storedAllQResults[this.storedAllQResults.length - 1]?.season === lastSeason + '' &&
+              this.storedAllQResults[this.storedAllQResults.length - 1]?.round === Number(this.latestSeasonRequest?.MRData.total) &&
+              resultsLastestRound.length === Number(this.latestRequest?.MRData.total)) {
+      this.isResultsPendingSubject.next(false);
+      const start = (controls.page - 1) * controls.itemsQty;
+      const results = this.storedAllQResults.slice(start);
+      return of(results);
     }
 
     let offset = Helper.calcOffset(this.storedAllQResults, this.latestSeasonRequested, this.latestRound);
-    let season = Number(seasonRace.MRData.RaceTable.season);
-    const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
 
     // Increment season when all rounds have been requested
-    const resultsLastestRound = this.storedAllQResults.filter(r => Number(r.season) === season && r.round === this.latestRound);
     if (this.latestRound === Number(this.latestSeasonRequest?.MRData.total) &&
         resultsLastestRound.length === Number(this.latestRequest?.MRData.total) &&
         season < lastSeason) {
@@ -158,13 +171,16 @@ export class QualifyingDataService {
   private updatePendingData(data: SeasonQualifyingResults, lastSeason: number): void {
     let allResultsRoundLength = 0;
     this.storedResultsLastRound.map(r => {
-      if (r.QualifyingResults) {
+      if (r.QualifyingResults && Number(r.season) === lastSeason && Number(r.round) === this.latestRound) {
         allResultsRoundLength += r.QualifyingResults?.length;
       }
     });
+    const newResults = data.MRData.RaceTable.Races[0]?.QualifyingResults?.length;
+
     if (Number(data.MRData.RaceTable.season) === lastSeason &&
         data.MRData.RaceTable.round === this.latestSeasonRequest.MRData.total &&
-        Number(data.MRData.total) === allResultsRoundLength) {
+        newResults &&
+        (Number(data.MRData.total) === (allResultsRoundLength + newResults))) {
         // Has requested all results from last round in last season
       this.isResultsPendingSubject.next(false);
     } else {
