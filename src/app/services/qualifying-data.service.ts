@@ -113,7 +113,7 @@ export class QualifyingDataService {
         const offset = Number(data.MRData.offset);
         const total = Number(data.MRData.total);
 
-        // if the last response items are not enough to complete QTY of items in page
+        // if in the last response items are not enough to complete QTY of items in page
         if ((limit + offset) > total && this.isResultsPendingSubject.getValue()) {
           this.latestRound++;
           return forkJoin([of(data), this.f1Service.getQualifyingResultsInRaceAndSeason(season, this.latestRound, (limit + offset - total), 0)])
@@ -123,9 +123,11 @@ export class QualifyingDataService {
       }),
       tap(data => this.storeRacesAndResults(data)),
       map(data => {
-        // return the last items in all results
-        let results = this.storedAllQResults.slice(-controls.itemsQty);
-        return results;
+        if (controls.page > 1) {
+          return this.storedAllQResults.slice((controls.page - 1) * controls.itemsQty);
+        } else {
+          return this.storedAllQResults.slice(-controls.itemsQty)
+        }
       })
     );
   }

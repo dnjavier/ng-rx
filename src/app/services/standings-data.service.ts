@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { F1Service } from './f1.service';
 import { PaginationControls } from '../utils/pagination-controls.interface';
 import { DriverStandings, Standings } from '../utils/driver-standings.interface';
-import { BehaviorSubject, Observable, map, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { RaceDataService } from './race-data.service';
 import { GlobalConstants } from '../utils/global-constants';
 import { SeasonRaces } from '../utils/season-races.interface';
@@ -27,6 +27,15 @@ export class StandingsDataService {
   constructor(private f1Service: F1Service,
     private raceService: RaceDataService) { }
 
+
+  /**
+   * Get the race to know the rounds per season and validate if
+   * request has been made previosuly, then switch to request
+   * that returns Driver Standings after a race.
+   * 
+   * @param controls - From pagination
+   * @returns Driver standings after a race
+   */
   public getStandings(controls: PaginationControls): Observable<DriverStandings[]> {
     let season  = this.latestSeasonRequested ? this.latestSeasonRequested : GlobalConstants.seasons[0];
     const lastStanding = this.storedAllDStandings[this.storedAllDStandings.length - 1]?.position;
@@ -63,20 +72,41 @@ export class StandingsDataService {
     }
 
     return this.f1Service.getDriverStandings(season, this.latestRound, limit, offset).pipe(
+      switchMap(data => {
+        const limit = Number(data.MRData.limit);
+        const offset = Number(data.MRData.offset);
+        const total = Number(data.MRData.total);
+
+        // if in the last response items are not enough to complete QTY of items in page
+        if ((limit + offset) > total && this.isDataPendingSubject.getValue()) {
+          this.latestRound++;
+          return forkJoin([
+            of(data),
+            this.f1Service.getDriverStandings(season, this.latestRound, (limit + offset - total), 0)])
+        } else {
+          return forkJoin([of(data)]);
+        }
+      }),
       tap(data => this.storeDriverStandings(data)),
-      map(data => data.MRData.StandingsTable.StandingsLists[0].DriverStandings)
+      map(data => {
+        if (controls.page > 1) {
+          return this.storedAllDStandings.slice((controls.page - 1) * controls.itemsQty);
+        } else {
+          return this.storedAllDStandings.slice(-controls.itemsQty)
+        }
+      })
     );
   }
 
-  private storeDriverStandings(data: Standings): void {
-    this.latestStandingsRequest = data;
-    const list = data.MRData.StandingsTable.StandingsLists;
-    for (let i = 0; i < list.length; i++) {
-      const stands = list[i].DriverStandings;
+  private storeDriverStandings(data: Standings[]): void {
+    this.latestStandingsRequest = data[0];
+
+    for (let i = 0; i < data.length; i++) {
+      const stands = data[i].MRData.StandingsTable.StandingsLists[0].DriverStandings;
       
       for (let j = 0; j < stands.length; j++) {
-        stands[j].season = list[i].season;
-        stands[j].round = Number(list[i].round);
+        stands[j].season = data[i].MRData.StandingsTable.season;
+        stands[j].round = Number(data[i].MRData.StandingsTable.round);
 
         this.storedAllDStandings.push(stands[j]);
       }
