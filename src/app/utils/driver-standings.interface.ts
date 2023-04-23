@@ -30,6 +30,6 @@ export interface DriverStandings {
   position: string;
   positionText: string;
   wins: string;
-  round?: string;
+  round?: number;
   season?: string;
 }
