@@ -76,6 +76,16 @@ export class StandingsDataService {
         const limit = Number(data.MRData.limit);
         const offset = Number(data.MRData.offset);
         const total = Number(data.MRData.total);
+        const list = data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings;
+        const lastStanding = list[list.length - 1]?.position;
+        
+        if (data.MRData.StandingsTable.round === this.latestSeasonRequest?.MRData.total &&
+        lastStanding === data.MRData.total &&
+        season < this.lastSeason) {
+          season++;
+          this.latestSeasonRequested ++;
+          this.latestRound = 1;
+        }
 
         // if in the last response items are not enough to complete QTY of items in page
         if ((limit + offset) > total && this.isDataPendingSubject.getValue()) {
