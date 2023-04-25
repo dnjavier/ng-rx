@@ -1,3 +1,4 @@
+import { GlobalConstants } from "./global-constants";
 import { PaginationControls } from "./pagination-controls.interface";
 
 export class Helper {
@@ -35,5 +36,23 @@ export class Helper {
       }
     }
     return limit;
+  }
+
+  /**
+   * Based on the previous rounds and positions
+   * determines if season needs to be incremented.
+   * 
+   * @param controls Pagination controls
+   * @returns season
+   */
+  static calcSeason(totalRounds: string, lastRound: string, lastPosition: string, totalPositions: string, actualSeason: number): number {
+    let season = actualSeason;
+    const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
+    if (lastRound === totalRounds &&
+        lastPosition === totalPositions &&
+        actualSeason < lastSeason) {
+      return season + 1;
+    }
+    return season;
   }
 }

@@ -40,11 +40,15 @@ export class StandingsDataService {
     let season  = this.latestSeasonRequested ? this.latestSeasonRequested : GlobalConstants.seasons[0];
     const lastStanding = this.storedAllDStandings[this.storedAllDStandings.length - 1]?.position;
 
-    // Increment season when all rounds have been requested
-    if (this.latestRound === Number(this.latestSeasonRequest?.MRData.total) &&
-    lastStanding === this.latestStandingsRequest?.MRData.total &&
-    season < this.lastSeason) {
-      season++;
+    const newSeason = Helper.calcSeason(
+      this.latestSeasonRequest?.MRData.total,
+      this.latestRound + '',
+      lastStanding,
+      this.latestStandingsRequest?.MRData.total,
+      season);
+
+    if (newSeason > season) {
+      // Season was incremented
       this.latestSeasonRequested ++;
       this.latestRound = 1;
       this.storedDStandingsLastRound = [];
@@ -75,24 +79,25 @@ export class StandingsDataService {
       switchMap(data => {
         const limit = Number(data.MRData.limit);
         const offset = Number(data.MRData.offset);
-        const total = Number(data.MRData.total);
+        const totalPositions = data.MRData.total;
         const list = data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings;
         const lastStanding = list[list.length - 1]?.position;
-        
-        if (data.MRData.StandingsTable.round === this.latestSeasonRequest?.MRData.total &&
-        lastStanding === data.MRData.total &&
-        season < this.lastSeason) {
-          season++;
+        const totalRounds = this.latestSeasonRequest?.MRData.total;
+        const lastRound = data.MRData.StandingsTable.round;
+        const newSeason = Helper.calcSeason(totalRounds, lastRound, lastStanding, totalPositions, season);
+
+        if (newSeason > season) {
           this.latestSeasonRequested ++;
           this.latestRound = 1;
         }
 
         // if in the last response items are not enough to complete QTY of items in page
-        if ((limit + offset) > total && this.isDataPendingSubject.getValue()) {
+        if ((limit + offset) > Number(totalPositions) && this.isDataPendingSubject.getValue()) {
           this.latestRound++;
+          const newLimit = limit + offset - Number(totalPositions);
           return forkJoin([
             of(data),
-            this.f1Service.getDriverStandings(season, this.latestRound, (limit + offset - total), 0)])
+            this.f1Service.getDriverStandings(newSeason, this.latestRound, newLimit, 0)])
         } else {
           return forkJoin([of(data)]);
         }

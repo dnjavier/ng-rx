@@ -111,12 +111,25 @@ export class QualifyingDataService {
       switchMap(data => {
         const limit = Number(data.MRData.limit);
         const offset = Number(data.MRData.offset);
-        const total = Number(data.MRData.total);
+        const totalResults = data.MRData.total;
+        const list = data.MRData.RaceTable.Races[0]?.QualifyingResults;
+        const lastStanding = list ? list[list.length - 1]?.position : '1';
+        const totalRounds = this.latestSeasonRequest?.MRData.total;
+        const lastRound = data.MRData.RaceTable.round;
+        const newSeason = Helper.calcSeason(totalRounds, lastRound, lastStanding, totalResults, season);
+
+        if (newSeason > season) {
+          this.latestSeasonRequested ++;
+          this.latestRound = 1;
+        }
 
         // if in the last response items are not enough to complete QTY of items in page
-        if ((limit + offset) > total && this.isResultsPendingSubject.getValue()) {
+        if ((limit + offset) > Number(totalResults) && this.isResultsPendingSubject.getValue()) {
           this.latestRound++;
-          return forkJoin([of(data), this.f1Service.getQualifyingResultsInRaceAndSeason(season, this.latestRound, (limit + offset - total), 0)])
+          const newLimit = limit + offset - Number(totalResults);
+          return forkJoin([
+            of(data),
+            this.f1Service.getQualifyingResultsInRaceAndSeason(newSeason, this.latestRound, newLimit, 0)])
         } else {
           return forkJoin([of(data)]);
         }
