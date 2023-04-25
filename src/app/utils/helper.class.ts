@@ -1,7 +1,10 @@
+import { BehaviorSubject } from "rxjs";
 import { GlobalConstants } from "./global-constants";
 import { PaginationControls } from "./pagination-controls.interface";
+import { Standings } from "./driver-standings.interface";
 
 export class Helper {
+  static readonly lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
 
   /**
    * Based on the existing data and the last round,
@@ -54,5 +57,33 @@ export class Helper {
       return season + 1;
     }
     return season;
+  }
+
+  /**
+   * Based on the data returned by the API, update
+   * the isPendingDataSubject accordingly.
+   *
+   * @param data
+   */
+  static updatePendingData(
+      seasonTotalRounds: string, 
+      subject: BehaviorSubject<boolean>, 
+      dataList: any[],
+      roundRequested: string,
+      seasonRequested: string,
+      totalLastRequest: string): void {
+    const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
+    const lastPosition = dataList[dataList.length - 1].position;
+
+    if (seasonRequested === lastSeason + '' &&
+        roundRequested === seasonTotalRounds &&
+        totalLastRequest === lastPosition) {
+      subject.next(false);
+    } else {
+      const existingValue = subject.getValue();
+      if (!existingValue) {
+        subject.next(true);
+      }
+    }
   }
 }

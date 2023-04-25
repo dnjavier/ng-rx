@@ -12,6 +12,7 @@ import { PaginationControls } from 'src/app/utils/pagination-controls.interface'
 })
 export class StandingsComponent {
 
+  pendingPages$: Observable<boolean> = this.dataService.isDataPending$;
   paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
   standings$: Observable<DriverStandings[]> = this.paginationSubject.asObservable().pipe(
     switchMap(controls => {

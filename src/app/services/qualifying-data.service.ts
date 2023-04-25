@@ -63,7 +63,7 @@ export class QualifyingDataService {
     const resultsLastestRound = this.storedAllQResults.filter(r => Number(r.season) === season && r.round === this.latestRound);
 
     // is data stored
-    if (controls.page * controls.itemsQty <= this.storedAllQResults.length) {
+    if (controls.page * controls.itemsQty < this.storedAllQResults.length) {
       const results = this.storedAllQResults.slice(controls.start, controls.end);
       this.isResultsPendingSubject.next(true);
       return of(results);
@@ -104,10 +104,7 @@ export class QualifyingDataService {
     const limit = Helper.calcLimit(controls, resultsLastestRound.length);
 
     return this.f1Service.getQualifyingResultsInRaceAndSeason(season, this.latestRound, limit, offset).pipe(
-      tap(data => {
-        this.latestRequest = data;
-        this.updatePendingData(data, lastSeason);
-      }),
+      tap(data => this.updatePendingData(data, lastSeason)),
       switchMap(data => {
         const limit = Number(data.MRData.limit);
         const offset = Number(data.MRData.offset);
@@ -184,19 +181,16 @@ export class QualifyingDataService {
    * @param lastSeason 
    */
   private updatePendingData(data: SeasonQualifyingResults, lastSeason: number): void {
-    let allResultsRoundLength = 0;
-    this.storedResultsLastRound.map(r => {
-      if (r.QualifyingResults && Number(r.season) === lastSeason && Number(r.round) === this.latestRound) {
-        allResultsRoundLength += r.QualifyingResults?.length;
-      }
-    });
-    const newResults = data.MRData.RaceTable.Races[0]?.QualifyingResults?.length;
+    this.latestRequest = data;
+    const newResults = data.MRData.RaceTable.Races[0]?.QualifyingResults;
+    const seasonRequested = Number(data.MRData.RaceTable.season);
+    const roundRequested = data.MRData.RaceTable.round;
+    const lastPosition = newResults ? newResults[newResults.length - 1].position : '1';
 
-    if (Number(data.MRData.RaceTable.season) === lastSeason &&
-        data.MRData.RaceTable.round === this.latestSeasonRequest.MRData.total &&
+    if (seasonRequested === lastSeason &&
+        roundRequested === this.latestSeasonRequest.MRData.total &&
         newResults &&
-        (Number(data.MRData.total) === (allResultsRoundLength + newResults))) {
-        // Has requested all results from last round in last season
+        data.MRData.total === lastPosition) {
       this.isResultsPendingSubject.next(false);
     } else {
       const existingValue = this.isResultsPendingSubject.getValue();
