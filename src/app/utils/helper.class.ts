@@ -68,12 +68,12 @@ export class Helper {
   static updatePendingData(
       seasonTotalRounds: string, 
       subject: BehaviorSubject<boolean>, 
-      dataList: any[],
+      dataList: any[] | undefined,
       roundRequested: string,
       seasonRequested: string,
       totalLastRequest: string): void {
     const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
-    const lastPosition = dataList[dataList.length - 1].position;
+    const lastPosition = dataList ? dataList[dataList.length - 1].position : '1';
 
     if (seasonRequested === lastSeason + '' &&
         roundRequested === seasonTotalRounds &&

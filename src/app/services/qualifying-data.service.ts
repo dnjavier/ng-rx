@@ -104,7 +104,13 @@ export class QualifyingDataService {
     const limit = Helper.calcLimit(controls, resultsLastestRound.length);
 
     return this.f1Service.getQualifyingResultsInRaceAndSeason(season, this.latestRound, limit, offset).pipe(
-      tap(data => this.updatePendingData(data, lastSeason)),
+      tap(data => Helper.updatePendingData(
+                            this.latestSeasonRequest?.MRData.total,
+                            this.isResultsPendingSubject,
+                            data.MRData.RaceTable.Races[0]?.QualifyingResults,
+                            data.MRData.RaceTable.round,
+                            data.MRData.RaceTable.season,
+                            data.MRData.total)),
       switchMap(data => {
         const limit = Number(data.MRData.limit);
         const offset = Number(data.MRData.offset);
@@ -149,6 +155,7 @@ export class QualifyingDataService {
    * @param data new data from API
    */
   private storeRacesAndResults(data: SeasonQualifyingResults[]): void  {
+    this.latestRequest = data[0];
     for (let i = 0; i < data.length; i++) {
       // Store races
       const races = data[i].MRData.RaceTable.Races;
@@ -169,33 +176,6 @@ export class QualifyingDataService {
             this.storedAllQResults.push(q);
           })
         }
-      }
-    }
-  }
-
-  /**
-   * Based on the values that are being returned, update
-   * the isPendingResults subject accordingly.
-   *
-   * @param data
-   * @param lastSeason 
-   */
-  private updatePendingData(data: SeasonQualifyingResults, lastSeason: number): void {
-    this.latestRequest = data;
-    const newResults = data.MRData.RaceTable.Races[0]?.QualifyingResults;
-    const seasonRequested = Number(data.MRData.RaceTable.season);
-    const roundRequested = data.MRData.RaceTable.round;
-    const lastPosition = newResults ? newResults[newResults.length - 1].position : '1';
-
-    if (seasonRequested === lastSeason &&
-        roundRequested === this.latestSeasonRequest.MRData.total &&
-        newResults &&
-        data.MRData.total === lastPosition) {
-      this.isResultsPendingSubject.next(false);
-    } else {
-      const existingValue = this.isResultsPendingSubject.getValue();
-      if (!existingValue) {
-        this.isResultsPendingSubject.next(true);
       }
     }
   }
