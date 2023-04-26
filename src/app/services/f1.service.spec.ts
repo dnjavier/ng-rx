@@ -6,7 +6,7 @@ import { F1Service } from './f1.service';
 import { mockSeasonQResults, mockSeasonRaceResults, mockSeasonRaces } from '../mocks/mockRaces';
 import { mockStatus } from '../mocks/mockStatus';
 
-fdescribe('F1Service', () => {
+describe('F1Service', () => {
   let service: F1Service;
   let httpController: HttpTestingController;
   let url = 'http://ergast.com/api/f1';
