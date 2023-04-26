@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { DriverSeason } from 'src/app/utils/drivers-season.interface';
 import { Subscription, BehaviorSubject } from 'rxjs';
-import { F1DataService } from 'src/app/services/f1-data.service';
+import { DriversDataService } from 'src/app/services/drivers-data.service';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
 import { GlobalConstants } from 'src/app/utils/global-constants';
 
@@ -18,7 +18,7 @@ export class DriversComponent implements OnInit {
   private drivers$?: Subscription;
   private items$?: Subscription;
 
-  constructor(private f1Data: F1DataService) {}
+  constructor(private dataService: DriversDataService) {}
 
   ngOnInit(): void {
     this.getDrivers();
@@ -47,7 +47,7 @@ export class DriversComponent implements OnInit {
    * call setPageDrivers.
    */
   getDrivers(): void {
-    this.drivers$ = this.f1Data.driversSeason$.subscribe((allDrivers => {
+    this.drivers$ = this.dataService.driversSeason$.subscribe((allDrivers => {
       this.setPageDrivers(allDrivers);
     }));
   }

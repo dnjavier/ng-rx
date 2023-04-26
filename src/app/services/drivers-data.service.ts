@@ -8,7 +8,7 @@ import { GlobalConstants } from '../utils/global-constants';
 @Injectable({
   providedIn: 'root'
 })
-export class F1DataService {
+export class DriversDataService {
 
   private driversSeasonSubject = new BehaviorSubject<DriverTable[]>([]);
   driversSeason$: Observable<DriverSeason[]> = this.driversSeasonSubject.asObservable().pipe(

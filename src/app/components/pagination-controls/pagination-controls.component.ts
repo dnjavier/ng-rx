@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { F1DataService } from 'src/app/services/f1-data.service';
 import { GlobalConstants } from 'src/app/utils/global-constants';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
 
@@ -17,7 +16,7 @@ export class PaginationControlsComponent {
   @Input() isMorePages!: boolean | null;
   @Output() controlsChanged = new EventEmitter<PaginationControls>();
 
-  constructor(private f1Data: F1DataService) {}
+  constructor() {}
 
   /**
    * Emits a new items quantity number thorugh the Output
