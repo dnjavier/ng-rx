@@ -8,6 +8,7 @@ import { SeasonRaces } from '../utils/season-races.interface';
 import { GlobalConstants } from '../utils/global-constants';
 import { QualifyingResults } from '../utils/qualifying-results.interface';
 import { Helper } from '../utils/helper.class';
+import { RaceDataService } from './race-data.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +26,8 @@ export class QualifyingDataService {
 
   isResultsPending$: Observable<boolean> = this.isResultsPendingSubject.asObservable();
 
-  constructor(private f1Service: F1Service) { }
+  constructor(private f1Service: F1Service,
+    private raceService: RaceDataService) { }
 
   /**
    * Get race to know the rounds per season and validate if
@@ -38,15 +40,10 @@ export class QualifyingDataService {
   public getResults(controls: PaginationControls): Observable<QualifyingResults[]> {
     const season = this.latestSeasonRequested ? this.latestSeasonRequested : GlobalConstants.seasons[0];
 
-    if (Number(this.latestSeasonRequest?.MRData.RaceTable.season) === season) {
-      return this.getRacesResult(controls, this.latestSeasonRequest)
-    } else {
-      // Get only first race of the season
-      return this.f1Service.getRacesPerSeason(season, 1, 0).pipe(
-        tap(data => this.latestSeasonRequest = data),
-        switchMap(data => this.getRacesResult(controls, data))
-      );
-    }
+    return this.raceService.getSeasonRaces(season, 1).pipe(
+      tap(data => this.latestSeasonRequest = data),
+      switchMap(data => this.getRacesResult(controls, data))
+    );
   }
 
   /**
@@ -59,7 +56,6 @@ export class QualifyingDataService {
    */
   private getRacesResult(controls: PaginationControls, seasonRace: SeasonRaces): Observable<QualifyingResults[]> {
     let season = Number(seasonRace.MRData.RaceTable.season);
-    const lastSeason = GlobalConstants.seasons[GlobalConstants.seasons.length - 1];
     const resultsLastestRound = this.storedAllQResults.filter(r => Number(r.season) === season && r.round === this.latestRound);
 
     // is data stored
@@ -70,7 +66,7 @@ export class QualifyingDataService {
 
     // has all data stored
     } else if (this.storedAllQResults &&
-              this.storedAllQResults[this.storedAllQResults.length - 1]?.season === lastSeason + '' &&
+              this.storedAllQResults[this.storedAllQResults.length - 1]?.season === Helper.lastSeason + '' &&
               this.storedAllQResults[this.storedAllQResults.length - 1]?.round === Number(this.latestSeasonRequest?.MRData.total) &&
               resultsLastestRound.length === Number(this.latestRequest?.MRData.total)) {
       this.isResultsPendingSubject.next(false);
@@ -84,7 +80,7 @@ export class QualifyingDataService {
     // Increment season when all rounds have been requested
     if (this.latestRound === Number(this.latestSeasonRequest?.MRData.total) &&
         resultsLastestRound.length === Number(this.latestRequest?.MRData.total) &&
-        season < lastSeason) {
+        season < Helper.lastSeason) {
       season++;
       this.latestSeasonRequested ++;
       this.latestRound = 1;

@@ -1,3 +1,4 @@
+import { BonusComponent } from './components/bonus/bonus.component';
 import { DriversComponent } from './components/drivers/drivers.component';
 import { QualifyingComponent } from './components/qualifying/qualifying.component';
 import { RacesComponent } from './components/races/races.component';
@@ -19,5 +20,9 @@ export const APP_ROUTES = [
   {
     path: 'standings',
     component: StandingsComponent
+  },
+  {
+    path: 'bonus',
+    component: BonusComponent
   }
 ];

@@ -7,6 +7,7 @@ import { SeasonRacesResults } from '../utils/season-races-results.interface';
 import { SeasonQualifyingResults } from '../utils/season-qualifying.interface';
 import { DriverTable } from '../utils/driver-table.interface';
 import { Standings } from '../utils/driver-standings.interface';
+import { Status } from '../utils/status.interface';
 
 @Injectable({
   providedIn: 'root'
@@ -103,5 +104,16 @@ export class F1Service {
       }
     };
     return this.http.get<Standings>(`${this.baseUrl}/${year}/${round}/driverStandings.json`, options);
+  }
+
+  /**
+   * Makes a request to the API in order to get all statuses
+   * of rounds in seasons.
+   * 
+   * @param year - Season's period
+   * @returns An observable with a list of Drivers
+   */
+  public getStatus(year: string, round: number): Observable<Status> {
+    return this.http.get<Status>(`${this.baseUrl}/${year}/${round}/status.json`);
   }
 }
