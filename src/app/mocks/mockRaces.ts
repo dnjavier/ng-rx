@@ -1,0 +1,177 @@
+import { SeasonQualifyingResults } from "../utils/season-qualifying.interface";
+import { SeasonRacesResults } from "../utils/season-races-results.interface";
+import { SeasonRaces } from "../utils/season-races.interface";
+
+export const mockSeasonRaces: SeasonRaces = {
+  "MRData":{
+     "xmlns":"http:\/\/ergast.com\/mrd\/1.5",
+     "series":"f1",
+     "url":"http://ergast.com/api/f1/2018.json",
+     "limit":"10",
+     "offset":"0",
+     "total":"21",
+     "RaceTable":{
+        "season":"2018",
+        "Races":[
+           {
+              "season":"2018",
+              "round":"10",
+              "url":"http:\/\/en.wikipedia.org\/wiki\/2018_British_Grand_Prix",
+              "raceName":"British Grand Prix",
+              "Circuit":{
+                 "circuitId":"silverstone",
+                 "url":"http:\/\/en.wikipedia.org\/wiki\/Silverstone_Circuit",
+                 "circuitName":"Silverstone Circuit",
+                 "Location":{
+                    "lat":"52.0786",
+                    "long":"-1.01694",
+                    "locality":"Silverstone",
+                    "country":"UK"
+                 }
+              },
+              "date":"2018-07-08",
+              "time":"13:10:00Z"
+           }
+        ]
+     }
+  }
+}
+
+export const mockSeasonRaceResults: SeasonRacesResults = {
+  "MRData":{
+     "xmlns":"http:\/\/ergast.com\/mrd\/1.5",
+     "series":"f1",
+     "url":"http://ergast.com/api/f1/2018/1/results.json",
+     "limit":"30",
+     "offset":"0",
+     "total":"20",
+     "RaceTable":{
+        "season":"2018",
+        "round":"1",
+        "Races":[
+           {
+              "season":"2018",
+              "round":"1",
+              "url":"http:\/\/en.wikipedia.org\/wiki\/2018_Australian_Grand_Prix",
+              "raceName":"Australian Grand Prix",
+              "Circuit":{
+                 "circuitId":"albert_park",
+                 "url":"http://en.wikipedia.org/wiki/Melbourne_Grand_Prix_Circuit",
+                 "circuitName":"Albert Park Grand Prix Circuit",
+                 "Location":{
+                    "lat":"-37.8497",
+                    "long":"144.968",
+                    "locality":"Melbourne",
+                    "country":"Australia"
+                 }
+              },
+              "date":"2018-03-25",
+              "time":"05:10:00Z",
+              "Results":[
+                 {
+                    "number":"5",
+                    "position":"1",
+                    "positionText":"1",
+                    "points":"25",
+                    "Driver":{
+                       "driverId":"vettel",
+                       "permanentNumber":"5",
+                       "code":"VET",
+                       "url":"http:\/\/en.wikipedia.org\/wiki\/Sebastian_Vettel",
+                       "givenName":"Sebastian",
+                       "familyName":"Vettel",
+                       "dateOfBirth":"1987-07-03",
+                       "nationality":"German"
+                    },
+                    "Constructor":{
+                       "constructorId":"ferrari",
+                       "url":"http:\/\/en.wikipedia.org\/wiki\/Scuderia_Ferrari",
+                       "name":"Ferrari",
+                       "nationality":"Italian"
+                    },
+                    "grid":"3",
+                    "laps":"58",
+                    "status":"Finished",
+                    "Time":{
+                       "millis":"5373283",
+                       "time":"1:29:33.283"
+                    },
+                    "FastestLap":{
+                       "rank":"4",
+                       "lap":"53",
+                       "Time":{
+                          "time":"1:26.469"
+                       },
+                       "AverageSpeed":{
+                          "units":"kph",
+                          "speed":"220.782"
+                       }
+                    }
+                 }
+              ]
+           }
+        ]
+     }
+  }
+}
+
+export const mockSeasonQResults: SeasonQualifyingResults = {
+  "MRData":{
+     "xmlns":"http:\/\/ergast.com\/mrd\/1.5",
+     "series":"f1",
+     "url":"http://ergast.com/api/f1/2018/1/qualifying.json",
+     "limit":"10",
+     "offset":"0",
+     "total":"20",
+     "RaceTable":{
+        "season":"2018",
+        "round":"1",
+        "Races":[
+           {
+              "season":"2018",
+              "round":"1",
+              "url":"http://en.wikipedia.org/wiki/2018_Australian_Grand_Prix",
+              "raceName":"Australian Grand Prix",
+              "Circuit":{
+                 "circuitId":"albert_park",
+                 "url":"http://en.wikipedia.org/wiki/Melbourne_Grand_Prix_Circuit",
+                 "circuitName":"Albert Park Grand Prix Circuit",
+                 "Location":{
+                    "lat":"-37.8497",
+                    "long":"144.968",
+                    "locality":"Melbourne",
+                    "country":"Australia"
+                 }
+              },
+              "date":"2018-03-25",
+              "time":"05:10:00Z",
+              "QualifyingResults":[
+                 {
+                    "number":"44",
+                    "position":"1",
+                    "Driver":{
+                       "driverId":"hamilton",
+                       "permanentNumber":"44",
+                       "code":"HAM",
+                       "url":"http://en.wikipedia.org/wiki/Lewis_Hamilton",
+                       "givenName":"Lewis",
+                       "familyName":"Hamilton",
+                       "dateOfBirth":"1985-01-07",
+                       "nationality":"British"
+                    },
+                    "Constructor":{
+                       "constructorId":"mercedes",
+                       "url":"http://en.wikipedia.org/wiki/Mercedes-Benz_in_Formula_One",
+                       "name":"Mercedes",
+                       "nationality":"German"
+                    },
+                    "Q1":"1:22.824",
+                    "Q2":"1:22.051",
+                    "Q3":"1:21.164"
+                 },
+              ]
+           }
+        ]
+     }
+  }
+}

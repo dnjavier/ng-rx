@@ -1,7 +1,7 @@
 export interface Driver {
   code: string;
   dateOfBirth: string;
-  driaverId: string;
+  driverId: string;
   familyName: string;
   givenName: string;
   nationality: string;

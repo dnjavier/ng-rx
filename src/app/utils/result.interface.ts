@@ -16,7 +16,7 @@ export interface Result {
     rank: string;
   };
   Time: {
-    milis: string;
+    millis: string;
     time: string;
   };
   grid: string;

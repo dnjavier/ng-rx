@@ -10,5 +10,7 @@ export interface SeasonRaces {
     offset: string;
     series: string;
     total: string;
+    xmlns: string;
+    url: string;
   }
 }
