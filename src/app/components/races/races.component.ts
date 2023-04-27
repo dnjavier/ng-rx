@@ -54,6 +54,8 @@ export class RacesComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * Makes a request to display the results of a 
+   * specific round in a season.
    * 
    * @param race 
    */
@@ -64,6 +66,10 @@ export class RacesComponent implements OnInit, OnDestroy {
     });
   }
 
+  /**
+   * Hides the container which display the 
+   * race results.
+   */
   hideResults(): void {
     this.showResults = false;
     this.raceResults = null;
