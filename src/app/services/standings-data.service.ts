@@ -94,29 +94,11 @@ export class StandingsDataService {
                             data.MRData.StandingsTable.season,
                             data.MRData.total)),
       switchMap(data => {
-        const limit = Number(data.MRData.limit);
-        const offset = Number(data.MRData.offset);
-        const totalPositions = data.MRData.total;
-        const list = data.MRData.StandingsTable.StandingsLists[0]?.DriverStandings;
-        const lastStanding = list[list.length - 1]?.position;
-        const lastRound = data.MRData.StandingsTable.round;
-        const newSeason = Helper.calcSeason(totalRounds, lastRound, lastStanding, totalPositions, season);
-
-        if (newSeason > season) {
-          this.latestSeasonRequested ++;
-          this.latestRound = 1;
-        }
-
-        // if in the last response items are not enough to complete QTY of items in page
-        if ((limit + offset) > Number(totalPositions) && this.isDataPendingSubject.getValue()) {
-          this.latestRound++;
-          const newLimit = limit + offset - Number(totalPositions);
-          return forkJoin([
-            of(data),
-            this.f1Service.getDriverStandings(newSeason, this.latestRound, newLimit, 0)])
-        } else {
-          return forkJoin([of(data)]);
-        }
+        return this.addNewRequest([data], season, totalRounds);
+      }),
+      switchMap(data => {
+        // some cases require a third request to complete page
+        return this.addNewRequest(data, season, totalRounds);
       }),
       tap(data => this.storeDriverStandings(data)),
       map(data => {
@@ -184,5 +166,46 @@ export class StandingsDataService {
     }
 
     return results;
+  }
+
+  /**
+   * Based on the most recent request, determines if
+   * an extra request is needed.
+   * 
+   * @param data - latest API response
+   * @param season - previous season requested
+   * @param totalRounds - rounds in season
+   * @returns a observable with a list
+   */
+  private addNewRequest(data: Standings[], season: number, totalRounds: string): Observable<Standings[]> {
+    const reqList: Observable<Standings>[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+      reqList.push(of(data[i]));
+
+      const limit = Number(data[i].MRData.limit);
+      const offset = Number(data[i].MRData.offset);
+      const total = Number(data[i].MRData.total);
+      const newLimit = limit + offset - total;
+    
+      // if in the last response items are not enough to complete QTY of items in page
+      if (newLimit > 0 && this.isDataPendingSubject.getValue() && i === data.length - 1) {
+        const list = data[i].MRData.StandingsTable.StandingsLists[0]?.DriverStandings;
+        const lastStanding = list[list.length - 1]?.position;
+        const lastRound = data[i].MRData.StandingsTable.round;
+        const newSeason = Helper.calcSeason(totalRounds, lastRound, lastStanding, total + '', season);
+
+        if (lastStanding === total + '') {
+          this.latestRound++;
+        }
+        if (newSeason > season) {
+          this.latestSeasonRequested ++;
+          this.latestRound = 1;
+        }
+
+        reqList.push(this.f1Service.getDriverStandings(newSeason, this.latestRound, newLimit, 0));
+      }
+    }
+    return forkJoin(reqList);
   }
 }
