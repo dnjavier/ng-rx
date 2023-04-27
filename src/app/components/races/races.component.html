@@ -8,6 +8,7 @@
       <tr>
         <th>Race name</th>
         <th>Season</th>
+        <th>Round</th>
         <th>Results</th>
       </tr>
     </thead>
@@ -15,6 +16,7 @@
       <tr *ngFor="let race of races$ | async">
         <td>{{ race.raceName }}</td>
         <td>{{ race.season }}</td>
+        <td>{{ race.round }}</td>
         <td><button (click)="viewResults(race)">View results</button></td>
       </tr>
     </tbody>

@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, combineLatest, map, of, tap } from 'rxjs';
+import { BehaviorSubject, Observable, combineLatest, forkJoin, map, of, switchMap, tap } from 'rxjs';
 import { Race } from '../utils/race.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { F1Service } from './f1.service';
 import { GlobalConstants } from '../utils/global-constants';
+import { Helper } from '../utils/helper.class';
 
 @Injectable({
   providedIn: 'root'
@@ -12,6 +13,8 @@ export class RaceDataService {
 
   private storedRacesResultsSubject = new BehaviorSubject<Race[]>([]);
   private storedRacesSubject = new BehaviorSubject<SeasonRaces[]>([]);
+  private previousRaceTotal = 0;
+  private storeRaces: Race[] = [];
 
   private isRacePendingSubject = new BehaviorSubject<boolean>(true);
   isRacePending$: Observable<boolean> = this.isRacePendingSubject.asObservable();
@@ -40,7 +43,6 @@ export class RaceDataService {
     }
   }
 
-
   /**
    * Determines what Races should be returned based on the stored values.
    * If values are not stored, return a request to the API, if values
@@ -53,58 +55,58 @@ export class RaceDataService {
    * @returns Observable with data stored or request to API
    */
   public getRaces(page: number, limit: number, offset: number): Observable<Race[]> {
-    const storedRaces = this.storedRacesSubject.getValue();
-    const allRaces = this.getAllRaces();
-    const lastSeasonStored = Number(allRaces[allRaces.length - 1]?.season);
-    const lastTotal = Number(storedRaces[storedRaces.length - 1]?.MRData.total);
-    const allRacesLastSeason = allRaces.filter(r => Number(r.season) === lastSeasonStored);
+    const lastSeasonStored = Number(this.storeRaces[this.storeRaces.length - 1]?.season);
+    let season = (lastSeasonStored ? lastSeasonStored : GlobalConstants.seasons[0]);
+    const allRacesLastSeason = this.storeRaces.filter(r => Number(r.season) === lastSeasonStored);
 
     // Returns data that is stored locally
-    if (this.isDataStored(page, limit, allRaces, lastSeasonStored, lastTotal)) {
-      return this.storedRacesSubject.asObservable().pipe(
-        map(races => {
-          return allRaces.slice(offset, limit + offset);
-        })
-      );
-
-    // Returns multiple requests to complete items on page
-    } else if (this.isCombinedRequest(page, limit, allRacesLastSeason, lastSeasonStored, lastTotal)) {
-      const season = (lastSeasonStored ? lastSeasonStored : Number(GlobalConstants.seasons[0]));
-      const missingRaces = lastTotal - allRacesLastSeason.length;
-
-      let newLimit = limit;
-      if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
-        newLimit = limit - allRaces.length;
-      }
-      return combineLatest([
-        this.requestRaces(season, newLimit, allRacesLastSeason.length),
-        this.requestRaces((season + 1), newLimit - missingRaces, 0)]).pipe(
-          map(data => {
-            if (allRaces.length < limit && page === 1) {
-              return allRaces.concat(data[0]).concat(data[1]);
-            } else {
-              return data[0].concat(data[1]);
-            }
-          })
-        );
-
-    // Returns a request with data
-    } else {
-      const season = (lastSeasonStored ? lastSeasonStored : GlobalConstants.seasons[0]);
-      let newLimit = limit;
-      if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
-        newLimit = limit - allRaces.length;
-      }
-      return this.requestRaces(season, newLimit, allRacesLastSeason.length).pipe(
-        map(data => {
-            if (this.isItemsChangedFirstPage(limit, page, allRaces)) {
-              return allRaces.concat(data);
-            } else {
-            return data;
-          }
-        }),
-      );
+    if (this.isDataStored(page, limit, this.storeRaces, lastSeasonStored, this.previousRaceTotal)) {
+      return of(this.storeRaces.slice(offset, limit + offset));
     }
+    
+    if (page === 1 && this.storeRaces.length > 0) {
+      limit = limit - this.storeRaces.length;
+    }
+    if (allRacesLastSeason.length && allRacesLastSeason.length === this.previousRaceTotal) {
+      season ++;
+      offset = 0;
+    } else {
+      offset = allRacesLastSeason.length
+    }
+
+    return this.f1Service.getRacesPerSeason(season, limit, offset).pipe(
+      switchMap(data => {
+        this.previousRaceTotal = Number(data.MRData.total);
+        const newLimit = limit + offset - this.previousRaceTotal;
+        
+        if (newLimit > 0 && season < Helper.lastSeason) {
+          season ++;
+          return forkJoin([
+            of(data),
+            this.f1Service.getRacesPerSeason(season, newLimit, 0).pipe(
+              tap(data => this.previousRaceTotal = Number(data.MRData.total))
+            )
+          ])
+        }
+        return forkJoin([of(data)]);
+      }),
+      map(data => {
+        let races: Race[] = [];
+        for (let i = 0; i < data.length; i++) {
+          races = races.concat(data[i].MRData.RaceTable.Races);
+        }
+        this.storeRaces = this.storeRaces.concat(races);
+
+        const allRacesLastSeason = this.storeRaces.filter(r => Number(r.season) === Helper.lastSeason);
+        if (this.previousRaceTotal === allRacesLastSeason.length) {
+          this.isRacePendingSubject.next(false);
+        }
+        if (page === 1) {
+          return this.storeRaces;
+        }
+        return races;
+      })
+    )
   }
 
   /**
@@ -188,69 +190,15 @@ export class RaceDataService {
    * @returns true if data is stored
    */
   private isDataStored(page: number, limit: number, allRaces: Race[], lastSeasonStored: number, lastTotal: number): boolean {
-    const lastSeason = Number(GlobalConstants.seasons[GlobalConstants.seasons.length - 1]);
     const isStored = page * limit <= allRaces.length;
     const allRacesLastSeason = allRaces.filter(r => Number(r.season) === lastSeasonStored);
 
     if (isStored) {
       this.isRacePendingSubject.next(true);
       return true;
-    } else if (lastSeason === lastSeasonStored && lastTotal === allRacesLastSeason.length) {
+    } else if (Helper.lastSeason === lastSeasonStored && lastTotal === allRacesLastSeason.length) {
       this.isRacePendingSubject.next(false);
       return true
-    }
-    return false;
-  }
-
-  /**
-   * Validates existing data plus values in upcoming request
-   * to determine if it is needed an extra request to complete
-   * data for pagination.
-   * 
-   * @param page 
-   * @param limit 
-   * @param allRacesLastSeason 
-   * @param lastSeasonStored 
-   * @param lastTotal 
-   * @returns 
-   */
-  private isCombinedRequest(page: number, limit: number, allRacesLastSeason: Race[], lastSeasonStored: number, lastTotal: number): boolean {
-    const lastSeason = Number(GlobalConstants.seasons[GlobalConstants.seasons.length - 1]);
-    if ((lastTotal - allRacesLastSeason.length) < limit &&
-        lastTotal <= (allRacesLastSeason.length + limit) &&
-        lastSeasonStored < lastSeason && page * limit > lastTotal) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Loops through all previous requests in oder to
-   * make an array with all stored races.
-   * 
-   * @returns List of all races from all seasons
-   */
-  private getAllRaces(): Race[] {
-    const storedRaces = this.storedRacesSubject.getValue();
-    let allRaces: Race[] = [];
-    for (let i = 0; i < storedRaces.length; i++) {
-      allRaces = allRaces.concat(storedRaces[i].MRData.RaceTable.Races);
-    }
-    return allRaces;
-  }
-
-  /**
-   * Validates if the QTY of items has changed on 
-   * the first page.
-   *
-   * @param limit 
-   * @param page 
-   * @param allRaces 
-   * @returns True if the QTY of items changed
-   */
-  private isItemsChangedFirstPage(limit: number, page: number, allRaces: Race[]): boolean {
-    if (allRaces.length < limit && page === 1) {
-      return true;
     }
     return false;
   }
