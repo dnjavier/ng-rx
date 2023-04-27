@@ -7,7 +7,7 @@ import { PaginationControls } from '../utils/pagination-controls.interface';
 import { F1Service } from './f1.service';
 import { RaceDataService } from './race-data.service';
 
-fdescribe('QualifyingDataService', () => {
+describe('QualifyingDataService', () => {
   let service: QualifyingDataService;
   let mockF1Service: Partial<F1Service> = {
     getQualifyingResultsInRaceAndSeason: () => of(mockSeasonQResults)
