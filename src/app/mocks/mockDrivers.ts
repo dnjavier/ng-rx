@@ -1,5 +1,6 @@
 import { Standings } from "../utils/driver-standings.interface";
 import { DriverTable } from "../utils/driver-table.interface";
+import { DriverSeason } from "../utils/drivers-season.interface";
 import { SeasonDrivers } from "../utils/season-drivers.interface";
 
 export const mockSeasonDrivers: SeasonDrivers = {
@@ -41,6 +42,11 @@ export const mockDriverTable: DriverTable = {
     "nationality":"Spanish"
   }]
 }
+
+export const mockDriverSeason: DriverSeason[] = [{
+   name: "Fernando Alonso",
+   season: "2018"
+}]
 
 export const mockStandings: Standings = {
    "MRData":{
