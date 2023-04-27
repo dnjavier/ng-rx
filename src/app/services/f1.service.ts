@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, map } from 'rxjs';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Observable, catchError, map, throwError } from 'rxjs';
 import { SeasonDrivers } from '../utils/season-drivers.interface';
 import { SeasonRaces } from '../utils/season-races.interface';
 import { SeasonRacesResults } from '../utils/season-races-results.interface';
@@ -29,7 +29,8 @@ export class F1Service {
     return this.http.get<SeasonDrivers>(`${this.baseUrl}/${year}/drivers.json`).pipe(
       map(data => {
         return data.MRData.DriverTable;
-      })
+      }),
+      catchError(this.handleError)
     );
   }
 
@@ -49,7 +50,8 @@ export class F1Service {
         offset: offset + ''
       }
     };
-    return this.http.get<SeasonRaces>(`${this.baseUrl}/${year}.json`, options);
+    return this.http.get<SeasonRaces>(`${this.baseUrl}/${year}.json`, options).pipe(
+      catchError(this.handleError));
   }
 
   /**
@@ -63,7 +65,8 @@ export class F1Service {
    * @returns An observable with a list of races' Results
    */
   public getRaceResultsInSeason(year: string, round: string): Observable<SeasonRacesResults> {
-    return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/results.json`);
+    return this.http.get<SeasonRacesResults>(`${this.baseUrl}/${year}/${round}/results.json`).pipe(
+      catchError(this.handleError));
   }
 
   /**
@@ -83,7 +86,8 @@ export class F1Service {
         offset: offset + ''
       }
     };
-    return this.http.get<SeasonQualifyingResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`, options);
+    return this.http.get<SeasonQualifyingResults>(`${this.baseUrl}/${year}/${round}/qualifying.json`, options).pipe(
+      catchError(this.handleError));
   }
 
   /**
@@ -103,7 +107,8 @@ export class F1Service {
         offset: offset + ''
       }
     };
-    return this.http.get<Standings>(`${this.baseUrl}/${year}/${round}/driverStandings.json`, options);
+    return this.http.get<Standings>(`${this.baseUrl}/${year}/${round}/driverStandings.json`, options).pipe(
+      catchError(this.handleError));
   }
 
   /**
@@ -114,6 +119,19 @@ export class F1Service {
    * @returns An observable with a list of Drivers
    */
   public getStatus(year: string, round: number): Observable<Status> {
-    return this.http.get<Status>(`${this.baseUrl}/${year}/${round}/status.json`);
+    return this.http.get<Status>(`${this.baseUrl}/${year}/${round}/status.json`).pipe(
+      catchError(this.handleError));
+  }
+
+  /**
+   * Takes care of the error, it prints the error in the
+   * browser's console and returns a new custom error.
+   * 
+   * @param error
+   * @returns
+   */
+  private handleError(error: HttpErrorResponse): Observable<never> {
+    console.error(`API returned error code: ${error.status}, body was: ${error.error}`);
+    return throwError(() => new Error('Something bad happened, please try again later.'));
   }
 }
