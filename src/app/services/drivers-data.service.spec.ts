@@ -12,7 +12,6 @@ describe('DriversDataService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [],
       providers: [ { provide: F1Service, useValue: mockF1Service } ]
     });
     service = TestBed.inject(DriversDataService);
