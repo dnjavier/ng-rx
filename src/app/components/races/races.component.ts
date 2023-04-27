@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { BehaviorSubject, Observable, Subscription, switchMap, tap } from 'rxjs';
+import { AfterContentInit, Component, OnDestroy } from '@angular/core';
+import { BehaviorSubject, Observable, Subscription, delay, switchMap, tap } from 'rxjs';
 import { RaceDataService } from 'src/app/services/race-data.service';
 import { GlobalConstants } from 'src/app/utils/global-constants';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
@@ -10,7 +10,7 @@ import { Race } from 'src/app/utils/race.interface';
   templateUrl: './races.component.html',
   styleUrls: ['./races.component.scss']
 })
-export class RacesComponent implements OnInit, OnDestroy {
+export class RacesComponent implements OnDestroy, AfterContentInit {
 
   isLoadingData = true;
   showResults = false;
@@ -21,6 +21,7 @@ export class RacesComponent implements OnInit, OnDestroy {
   paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
   races$: Observable<Race[]> = this.paginationSubject.asObservable().pipe(
     tap(data => this.isLoadingData = true),
+    delay(0),
     switchMap(controls => {
       return this.dataService.getRaces(controls.page, controls.itemsQty, controls.start).pipe(
         tap(data => this.isLoadingData = false)
@@ -32,7 +33,7 @@ export class RacesComponent implements OnInit, OnDestroy {
 
   constructor(private dataService: RaceDataService) { }
 
-  ngOnInit(): void {
+  ngAfterContentInit(): void {
 
   }
 

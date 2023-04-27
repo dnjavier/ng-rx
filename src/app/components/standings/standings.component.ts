@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, delay, switchMap, tap } from 'rxjs';
 import { StandingsDataService } from 'src/app/services/standings-data.service';
 import { DriverStandings } from 'src/app/utils/driver-standings.interface';
 import { GlobalConstants } from 'src/app/utils/global-constants';
@@ -17,6 +17,7 @@ export class StandingsComponent {
   paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
   standings$: Observable<DriverStandings[]> = this.paginationSubject.asObservable().pipe(
     tap(data => this.isLoadingData = true),
+    delay(0),
     switchMap(controls => {
       return this.dataService.getStandings(controls).pipe(
         tap(data => this.isLoadingData = false)

@@ -1,4 +1,4 @@
-<app-pagination-controls *ngIf="!showResults"
+<app-pagination-controls *ngIf="!showResults && races$"
 [currentPage]="(paginationSubject | async)?.page"
 [isLoadingData]="isLoadingData"
 [isMorePages]="pendingPages$ | async"

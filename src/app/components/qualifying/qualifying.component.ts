@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+import { BehaviorSubject, Observable, delay, switchMap, tap } from 'rxjs';
 import { QualifyingDataService } from 'src/app/services/qualifying-data.service';
 import { GlobalConstants } from 'src/app/utils/global-constants';
 import { PaginationControls } from 'src/app/utils/pagination-controls.interface';
@@ -17,6 +17,7 @@ export class QualifyingComponent {
   paginationSubject = new BehaviorSubject<PaginationControls>(GlobalConstants.defaultPagination);
   races$: Observable<QualifyingResults[]> = this.paginationSubject.asObservable().pipe(
     tap(data => this.isLoadingData = true),
+    delay(0),
     switchMap(controls => {
       return this.dataService.getResults(controls).pipe(
         tap(data => this.isLoadingData = false),

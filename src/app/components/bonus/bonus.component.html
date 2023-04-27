@@ -1,6 +1,7 @@
 <h2>Some stats for seasons 2018-2022</h2>
 
-<dl>
+<p *ngIf="isLoading">Data is loading...</p>
+<dl *ngIf="!isLoading">
   <dt>Cars that finished</dt>
   <dd>{{ finished }}</dd>
 

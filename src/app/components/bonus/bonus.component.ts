@@ -16,6 +16,7 @@ export class BonusComponent implements OnInit, OnDestroy {
   public finished!: number;
   public accident!: number;
   public plus1Lap!: number;
+  public isLoading = false;
 
   private statsSubscription!: Subscription;
 
@@ -29,6 +30,7 @@ export class BonusComponent implements OnInit, OnDestroy {
     this.plus1Lap = this.statsService.plus1Lap;
 
     if (!this.finished && !this.accident && !this.plus1Lap) {
+      this.isLoading = true;
       // 1 req for each season
       this.statsSubscription = forkJoin(GlobalConstants.seasons.map(year => this.raceService.getSeasonRaces(year, 1).pipe(
         switchMap(data => {
@@ -39,7 +41,10 @@ export class BonusComponent implements OnInit, OnDestroy {
           }
           return forkJoin(listRequests);
         })
-      ))).subscribe(data => this.extractStats(data));
+      ))).subscribe(data => {
+        this.isLoading = false;
+        this.extractStats(data);
+      });
     }
   }
 
