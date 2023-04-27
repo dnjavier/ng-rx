@@ -93,13 +93,9 @@ export class StandingsDataService {
                             data.MRData.StandingsTable.round,
                             data.MRData.StandingsTable.season,
                             data.MRData.total)),
-      switchMap(data => {
-        return this.addNewRequest([data], season, totalRounds);
-      }),
-      switchMap(data => {
-        // some cases require a third request to complete page
-        return this.addNewRequest(data, season, totalRounds);
-      }),
+      switchMap(data => this.addNewRequest([data], season, totalRounds)),
+      // some cases require a third request to complete page
+      switchMap(data => this.addNewRequest(data, season, totalRounds)),
       tap(data => this.storeDriverStandings(data)),
       map(data => {
         if (controls.page > 1) {

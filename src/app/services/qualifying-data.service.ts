@@ -58,21 +58,9 @@ export class QualifyingDataService {
     let season = Number(seasonRace.MRData.RaceTable.season);
     const resultsLastestRound = this.storedAllQResults.filter(r => Number(r.season) === season && r.round === this.latestRound);
 
-    // is data stored
-    if (controls.page * controls.itemsQty < this.storedAllQResults.length) {
-      const results = this.storedAllQResults.slice(controls.start, controls.end);
-      this.isResultsPendingSubject.next(true);
-      return of(results);
-
-    // has all data stored
-    } else if (this.storedAllQResults &&
-              this.storedAllQResults[this.storedAllQResults.length - 1]?.season === Helper.lastSeason + '' &&
-              this.storedAllQResults[this.storedAllQResults.length - 1]?.round === Number(this.latestSeasonRequest?.MRData.total) &&
-              resultsLastestRound.length === Number(this.latestRequest?.MRData.total)) {
-      this.isResultsPendingSubject.next(false);
-      const start = (controls.page - 1) * controls.itemsQty;
-      const results = this.storedAllQResults.slice(start);
-      return of(results);
+    const storedData = this.getStoredData(controls, season, resultsLastestRound);
+    if (storedData.length) {
+      return of(storedData);
     }
 
     let offset = Helper.calcOffset(this.storedAllQResults, this.latestSeasonRequested, this.latestRound);
@@ -108,31 +96,9 @@ export class QualifyingDataService {
                             data.MRData.RaceTable.season,
                             data.MRData.total)),
       switchMap(data => {
-        const limit = Number(data.MRData.limit);
-        const offset = Number(data.MRData.offset);
-        const totalResults = data.MRData.total;
-        const list = data.MRData.RaceTable.Races[0]?.QualifyingResults;
-        const lastStanding = list ? list[list.length - 1]?.position : '1';
-        const totalRounds = this.latestSeasonRequest?.MRData.total;
-        const lastRound = data.MRData.RaceTable.round;
-        const newSeason = Helper.calcSeason(totalRounds, lastRound, lastStanding, totalResults, season);
-
-        if (newSeason > season) {
-          this.latestSeasonRequested ++;
-          this.latestRound = 1;
-        }
-
-        // if in the last response items are not enough to complete QTY of items in page
-        if ((limit + offset) > Number(totalResults) && this.isResultsPendingSubject.getValue()) {
-          this.latestRound++;
-          const newLimit = limit + offset - Number(totalResults);
-          return forkJoin([
-            of(data),
-            this.f1Service.getQualifyingResultsInRaceAndSeason(newSeason, this.latestRound, newLimit, 0)])
-        } else {
-          return forkJoin([of(data)]);
-        }
+        return this.addNewRequest([data], season, this.latestSeasonRequest?.MRData.total)
       }),
+      switchMap(data => this.addNewRequest(data, season, this.latestSeasonRequest?.MRData.total)),
       tap(data => this.storeRacesAndResults(data)),
       map(data => {
         if (controls.page > 1) {
@@ -174,5 +140,79 @@ export class QualifyingDataService {
         }
       }
     }
+  }
+
+  /**
+   * Based on the most recent request, determines if
+   * an extra request is needed.
+   * 
+   * @param data - latest API response
+   * @param season - previous season requested
+   * @param totalRounds - rounds in season
+   * @returns a observable with a list
+   */
+  private addNewRequest(data: SeasonQualifyingResults[], season: number, totalRounds: string): Observable<SeasonQualifyingResults[]> {
+    const reqList: Observable<SeasonQualifyingResults>[] = [];
+
+    for (let i = 0; i < data.length; i++) {
+      reqList.push(of(data[i]));
+
+      const limit = Number(data[i].MRData.limit);
+      const offset = Number(data[i].MRData.offset);
+      const total = Number(data[i].MRData.total);
+      const newLimit = limit + offset - total;
+    
+      // if in the last response items are not enough to complete QTY of items in page
+      if (newLimit > 0 && this.isResultsPendingSubject.getValue() && i === data.length - 1) {
+        const list = data[i].MRData.RaceTable.Races[0]?.QualifyingResults;
+        const lastStanding = list ? list[list.length - 1]?.position : '1';
+        const lastRound = data[i].MRData.RaceTable.round;
+        const newSeason = Helper.calcSeason(totalRounds, lastRound, lastStanding, total + '', season);
+
+        if (lastStanding === total + '') {
+          this.latestRound++;
+        }
+        if (newSeason > season) {
+          this.latestSeasonRequested ++;
+          this.latestRound = 1;
+        }
+
+        reqList.push(this.f1Service.getQualifyingResultsInRaceAndSeason(newSeason, this.latestRound, newLimit, 0));
+      }
+    }
+    return forkJoin(reqList);
+  }
+
+  /**
+   * Based on the existing stored values and the 
+   * pagination, determines if values have already 
+   * been requested.
+   * 
+   * @param controls - From pagination
+   * @returns stored data items
+   */
+  private getStoredData(controls: PaginationControls, season: number, resultsLastestRound: QualifyingResults[]): QualifyingResults[] {
+    const isAllDataStored = this.storedAllQResults &&
+      this.storedAllQResults[this.storedAllQResults.length - 1]?.season === Helper.lastSeason + '' &&
+      this.storedAllQResults[this.storedAllQResults.length - 1]?.round === Number(this.latestSeasonRequest?.MRData.total) &&
+      resultsLastestRound.length === Number(this.latestRequest?.MRData.total);
+
+    // is data stored
+    if (controls.page * controls.itemsQty <= this.storedAllQResults.length && !isAllDataStored) {
+      const results = this.storedAllQResults.slice(controls.start, controls.end);
+      this.isResultsPendingSubject.next(true);
+      return results;
+
+    // has all data stored
+    } else if (this.storedAllQResults &&
+              this.storedAllQResults[this.storedAllQResults.length - 1]?.season === Helper.lastSeason + '' &&
+              this.storedAllQResults[this.storedAllQResults.length - 1]?.round === Number(this.latestSeasonRequest?.MRData.total) &&
+              resultsLastestRound.length === Number(this.latestRequest?.MRData.total)) {
+      this.isResultsPendingSubject.next(false);
+      const start = (controls.page - 1) * controls.itemsQty;
+      const results = this.storedAllQResults.slice(start);
+      return results;
+    }
+    return [];
   }
 }
