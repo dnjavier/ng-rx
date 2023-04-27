@@ -16,6 +16,7 @@ describe('QualifyingComponent', () => {
     @Input() currentPage: any;
     @Input() itemsLength: any;
     @Input() isMorePages: any;
+    @Input() isLoadingData = false;
   }
 
 
@@ -31,6 +32,7 @@ describe('QualifyingComponent', () => {
 
     fixture = TestBed.createComponent(QualifyingComponent);
     component = fixture.componentInstance;
+    component.isLoadingData = false;
     fixture.detectChanges();
   });
 

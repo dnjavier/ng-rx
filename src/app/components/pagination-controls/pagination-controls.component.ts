@@ -14,6 +14,7 @@ export class PaginationControlsComponent {
   @Input() itemsLength: number | undefined;
   @Input() currentPage!: number | null | undefined;
   @Input() isMorePages!: boolean | null;
+  @Input() isLoadingData = false;
   @Output() controlsChanged = new EventEmitter<PaginationControls>();
 
   constructor() {}
@@ -51,14 +52,14 @@ export class PaginationControlsComponent {
    * is not exceeded.
    */
   nextPage(): void {
-    if (this.currentPage && this.itemsLength) {
+    if (this.currentPage && this.itemsLength && !this.isLoadingData) {
       // rounded up
       const maxPage = Math.ceil(this.itemsLength / this.itemsQty);
 
       if (this.currentPage < maxPage) {
         this.onPageChanged(this.currentPage + 1);
       }
-    } else if (this.isMorePages && this.currentPage) {
+    } else if (this.isMorePages && this.currentPage && !this.isLoadingData) {
       this.onPageChanged(this.currentPage + 1);
     }
   }

@@ -1,5 +1,6 @@
 <app-pagination-controls *ngIf="!showResults"
 [currentPage]="(paginationSubject | async)?.page"
+[isLoadingData]="isLoadingData"
 [isMorePages]="pendingPages$ | async"
 (controlsChanged)="controlsChanged($event)">
   <table>

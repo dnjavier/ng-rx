@@ -1,6 +1,7 @@
 <app-pagination-controls
 [currentPage]="(paginationSubject | async)?.page"
 [isMorePages]="pendingPages$ | async"
+[isLoadingData]="isLoadingData"
 (controlsChanged)="controlsChanged($event)">
   <table>
     <thead>

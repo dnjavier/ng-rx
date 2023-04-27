@@ -16,6 +16,7 @@ describe('StandingsComponent', () => {
     @Input() currentPage: any;
     @Input() itemsLength: any;
     @Input() isMorePages: any;
+    @Input() isLoadingData = undefined;
   }
 
   beforeEach(async () => {
@@ -30,6 +31,7 @@ describe('StandingsComponent', () => {
 
     fixture = TestBed.createComponent(StandingsComponent);
     component = fixture.componentInstance;
+    component.isLoadingData = false;
     fixture.detectChanges();
   });
 

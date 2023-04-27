@@ -16,6 +16,7 @@ describe('RacesComponent', () => {
     @Input() currentPage: any;
     @Input() itemsLength: any;
     @Input() isMorePages: any;
+    @Input() isLoadingData = false;
   }
 
   beforeEach(async () => {
@@ -30,6 +31,7 @@ describe('RacesComponent', () => {
 
     fixture = TestBed.createComponent(RacesComponent);
     component = fixture.componentInstance;
+    component.isLoadingData = false;
     fixture.detectChanges();
   });
 
