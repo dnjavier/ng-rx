@@ -4,7 +4,7 @@ import { mockDriverTable } from '../mocks/mockDrivers';
 import { F1Service } from './f1.service';
 import { of } from 'rxjs';
 
-fdescribe('F1DataService', () => {
+describe('DriversDataService', () => {
   let service: DriversDataService;
   let mockF1Service: Partial<F1Service> = {
     getDriversPerSeason: (year: number) => of(mockDriverTable)
